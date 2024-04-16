@@ -1,2 +1,2 @@
-rootProject.name = "DIS-JavaMVC"
+rootProject.name = "DIY-JavaMVC"
 

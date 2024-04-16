@@ -10,6 +10,10 @@ repositories {
 }
 
 dependencies {
+    // 서블릿
+    implementation("javax.servlet:javax.servlet-api:4.0.1")
+    implementation("javax.servlet:jstl:1.2")
+
     // 톰캣
     implementation("org.apache.tomcat.embed:tomcat-embed-core:8.5.42")
     implementation("org.apache.tomcat.embed:tomcat-embed-jasper:8.5.42")
