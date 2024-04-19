@@ -26,8 +26,4 @@ class Pay {
     public long getBalance() {
         return balance;
     }
-
-    public void charge(long money) {
-        this.balance = this.balance + money;
-    }
 }

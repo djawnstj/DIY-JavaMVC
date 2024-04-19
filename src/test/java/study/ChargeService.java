@@ -1,8 +1,5 @@
 package study;
 
-import org.assertj.core.api.Assertions;
-import org.junit.jupiter.api.Test;
-
 public class ChargeService {
     
     // 로그인 한 이용자가 자신의 페이 계좌에 잔액을 충전할 수 있도록 기능을 구현한다.
@@ -23,16 +20,11 @@ public class ChargeService {
 
     // Then : 해당 유저의 계좌에 제대로 충전되었는지 확인
 
-    @Test
-    void charge(User user, Pay pay, long money) {
+    void charge(User user, long money) {
+        
+        long balance = user.getPay().getBalance() + money;
 
-        pay.charge(money);
-        user.setPay(pay);
-
-        int num1 = 123;
-        int num2 = 345;
-
-        Assertions.assertThat(num1 == num2);
+        user.setPay(initPay);
     }
 
 }
