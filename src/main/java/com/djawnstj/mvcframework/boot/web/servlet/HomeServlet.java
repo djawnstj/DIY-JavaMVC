@@ -1,5 +1,8 @@
 package com.djawnstj.mvcframework.boot.web.servlet;
 
+import com.djawnstj.mvcframework.boot.web.servlet.user.User;
+import com.djawnstj.mvcframework.boot.web.servlet.user.UserRepository;
+
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -8,6 +11,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Collection;
 
 @WebServlet("/home")
 public class HomeServlet extends HttpServlet {
@@ -19,15 +23,9 @@ public class HomeServlet extends HttpServlet {
     }
 
     @Override
-    protected void service(final HttpServletRequest req, final HttpServletResponse resp) throws ServletException, IOException {
-        System.out.println("service called.");
-        final RequestDispatcher requestDispatcher = req.getRequestDispatcher("home.jsp");
-        requestDispatcher.forward(req, resp);
-    }
-
-    @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         System.out.println("HomeServlet.doGet");
-        super.doGet(req, resp);
+        final RequestDispatcher requestDispatcher = req.getRequestDispatcher("home.jsp");
+        requestDispatcher.forward(req, resp);
     }
 }
