@@ -4,10 +4,6 @@ class User {
     private long id;
     private Pay pay;
 
-    User() {
-
-    }
-
     User(long id, Pay pay) {
         this.id = id;
         this.pay = pay;

@@ -4,8 +4,6 @@ class Pay {
     private long id;
     private long balance;
 
-    Pay() {}
-
     Pay(long id, long balance) {
         this.id = id;
         this.balance = balance;
