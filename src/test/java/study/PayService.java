@@ -1,26 +1,39 @@
 package study;
 
-import org.assertj.core.api.Assertions;
-import org.junit.jupiter.api.Test;
+import java.util.HashMap;
 
 public class PayService {
 
-    // 로그인 한 이용자가 페이를 이용해 상품을 구매할 수 있도록 기능을 구현한다.
-    // 상품을 구매한 후에  페이 잔액은 항상 0원 이상이어야 한다.
+    User pay(User user, Product product) {
 
-    // Given:
+        UserRepository userRepository = new UserRepository(new HashMap<>());
+        ProductRepository productRepository = new ProductRepository(new HashMap<>());
+        userRepository.registerUser(user);
+        productRepository.registerProduct(product);
 
-    // When:
+        User findUser = userRepository.findUser(user.getId());
+        Product findProduct = productRepository.findProduct(product.getId());
 
-    // Then:
+        try {
+            long balance = findUser.getPay().getBalance();
+            long price = findProduct.getPrice();
+                
+            if (price > balance) {
+                System.out.println("잔액이 부족합니다.");
+            }
 
-    @Test
-    void pay() {
+            if (balance >= price) {
+                long balanceAfterPay = balance - price;
+                findUser.getPay().setBalance(balanceAfterPay);
+                return findUser;
+            }
 
-        int num1 = 123;
-        int num2 = 345;
+        } catch (NullPointerException ex) {
+            ex.printStackTrace();
+            return user;
+        }
 
-        Assertions.assertThat(num1 == num2);
+        return findUser;
     }
     
 }

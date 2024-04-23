@@ -14,4 +14,8 @@ public class UserRepository {
         return userRepository.get(id);
     }
 
+    void registerUser(User user) {
+        this.userRepository.put(user.getId(), user);
+    }
+
 }
