@@ -17,6 +17,7 @@ dependencies {
     // 톰캣
     implementation("org.apache.tomcat.embed:tomcat-embed-core:8.5.42")
     implementation("org.apache.tomcat.embed:tomcat-embed-jasper:8.5.42")
+    implementation ("org.apache.httpcomponents:httpclient:4.5.13");
 
     // 로그백
     implementation("ch.qos.logback:logback-classic:1.4.7")
