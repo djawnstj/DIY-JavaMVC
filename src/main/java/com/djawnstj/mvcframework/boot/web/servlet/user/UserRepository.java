@@ -13,7 +13,12 @@ public class UserRepository {
     public static void save(User user) {
         users.put(userCount++, user);
     }
+
     public static Collection<User> findAll() {
         return users.values();
+    }
+
+    public static User findById(long id) {
+        return users.get(id);
     }
 }

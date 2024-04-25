@@ -42,4 +42,4 @@ bin/
 .DS_Store
 
 ### tomcat log ###
-tomcat.8080
+/tomcat.8080/
