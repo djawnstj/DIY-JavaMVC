@@ -22,14 +22,10 @@ dependencies {
     // 로그백
     implementation("ch.qos.logback:logback-classic:1.4.7")
 
-    // 잭슨
-    implementation ("com.fasterxml.jackson.module:jackson-module-kotlin:2.12.3")
-
     // 테스트
     testImplementation(platform("org.junit:junit-bom:5.9.1"))
     testImplementation("org.junit.jupiter:junit-jupiter")
     testImplementation("org.assertj:assertj-core:3.25.3")
-    testImplementation ("org.mockito:mockito-core:3.12.4")
 }
 
 tasks.test {
