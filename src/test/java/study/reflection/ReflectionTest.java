@@ -38,7 +38,5 @@ public class ReflectionTest {
                 logger.debug(invoke.toString());
             }
         }
-
-
     }
 }
