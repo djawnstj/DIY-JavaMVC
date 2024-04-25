@@ -1,7 +1,6 @@
 package com.djawnstj.mvcframework.boot.web.servlet;
 
 import java.io.IOException;
-import java.util.Collection;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletConfig;
