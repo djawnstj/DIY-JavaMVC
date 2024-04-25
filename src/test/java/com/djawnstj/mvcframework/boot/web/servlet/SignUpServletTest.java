@@ -2,14 +2,10 @@ package com.djawnstj.mvcframework.boot.web.servlet;
 
 import com.djawnstj.mvcframework.MvcApplicationMain;
 import com.djawnstj.mvcframework.boot.web.servlet.user.User;
-import com.djawnstj.mvcframework.boot.web.servlet.user.UserRepository;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.http.HttpEntity;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.message.BasicNameValuePair;
@@ -22,9 +18,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.net.http.HttpClient;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 
