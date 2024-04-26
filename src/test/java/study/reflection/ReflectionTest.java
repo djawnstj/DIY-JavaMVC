@@ -52,9 +52,31 @@ public class ReflectionTest {
     void testAnnotationMethodRun() throws NoSuchMethodException, SecurityException {
         String printView = "printView";
         Class<Car> carClass = Car.class;
-        
+
         Method printViewMethod = carClass.getMethod(printView);
         printViewMethod.isAnnotationPresent(PrintView.class);
+    }
+
+    @Test
+    @DisplayName("private field에 값 할당")
+    void privateFieldAccess() throws NoSuchFieldException, SecurityException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException {
+        String name = "name";
+        String price = "price";
+        String newName = "BMW";
+        int newPrice = 130000000;
+
+        Class<Car> carClass = Car.class;
+        Car carInstance = carClass.getDeclaredConstructor().newInstance();
+
+        Field nameField = carClass.getDeclaredField(name);
+        Field priceField = carClass.getDeclaredField(price);
+        nameField.setAccessible(true);
+        priceField.setAccessible(true);
+        nameField.set(carInstance, newName);
+        priceField.set(carInstance, newPrice);
+
+        Assertions.assertThat(carInstance.getName()).isEqualTo(newName);
+        Assertions.assertThat(carInstance.getPrice()).isEqualTo(newPrice);
     }
 
 }
