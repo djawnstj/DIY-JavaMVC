@@ -47,4 +47,14 @@ public class ReflectionTest {
 
     }
 
+    @Test
+    @DisplayName("@PrintView 어노테이션 메서드 실행")
+    void testAnnotationMethodRun() throws NoSuchMethodException, SecurityException {
+        String printView = "printView";
+        Class<Car> carClass = Car.class;
+        
+        Method printViewMethod = carClass.getMethod(printView);
+        printViewMethod.isAnnotationPresent(PrintView.class);
+    }
+
 }
