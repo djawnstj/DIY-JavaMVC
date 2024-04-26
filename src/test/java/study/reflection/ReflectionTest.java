@@ -1,8 +1,10 @@
 package study.reflection;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -21,7 +23,7 @@ public class ReflectionTest {
             logger.debug(field.getName());
         }
 
-        for(Method method : carClass.getMethods()) {
+        for(Method method : carClass.getDeclaredMethods()) {
             logger.info(method.getName());
         }
 
@@ -29,7 +31,19 @@ public class ReflectionTest {
 
     @Test
     @DisplayName("test로 시작하는 메서드 실행")
-    void testMethodRun() {
+    void testMethodRun() throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, InstantiationException, NoSuchMethodException, SecurityException {
+
+        String test = "test";
+        Class<Car> carClass = Car.class;
+
+        for (Method method : carClass.getDeclaredMethods()) {
+            if (method.getName().startsWith(test)) {
+                logger.debug(method.getName());
+                
+                Object invoke = method.invoke(carClass.getDeclaredConstructor().newInstance());
+                logger.debug(invoke.toString());
+            }
+        }
 
     }
 
