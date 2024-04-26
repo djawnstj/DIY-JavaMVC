@@ -3,12 +3,19 @@ package study.reflection;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static org.assertj.core.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertAll;
 
 public class ReflectionTest {
     private static final Logger logger = LoggerFactory.getLogger(ReflectionTest.class);
@@ -31,19 +38,28 @@ public class ReflectionTest {
 
     @Test
     @DisplayName("test로 시작하는 메서드 실행")
-    void testMethodRun() throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, InstantiationException, NoSuchMethodException, SecurityException {
+    void testMethodRun() throws IllegalArgumentException, SecurityException {
 
         String test = "test";
         Class<Car> carClass = Car.class;
+        String carName = "BMW";
+        int carPrice = 130000000;
+        Car car = new Car(carName, carPrice);
 
-        for (Method method : carClass.getDeclaredMethods()) {
-            if (method.getName().startsWith(test)) {
-                logger.debug(method.getName());
-                
-                Object invoke = method.invoke(carClass.getDeclaredConstructor().newInstance());
-                logger.debug(invoke.toString());
-            }
-        }
+        Stream<Object> stream = Arrays.stream(carClass.getDeclaredMethods())
+                .filter(method -> method.getName().startsWith(test))
+                .map(method -> {
+                    try {
+                        return method.invoke(car);
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+        List<Object> result = stream.collect(Collectors.toList());
+
+        assertThat(result)
+                .hasSize(2)
+                .containsExactlyInAnyOrder("test : " + carName, "test : " + carPrice);
 
     }
 
@@ -53,6 +69,7 @@ public class ReflectionTest {
         String printView = "printView";
         Class<Car> carClass = Car.class;
 
+        // 지금 내가 지정해서 @PrintView가 있는지 체크한 상황
         Method printViewMethod = carClass.getMethod(printView);
         printViewMethod.isAnnotationPresent(PrintView.class);
     }
