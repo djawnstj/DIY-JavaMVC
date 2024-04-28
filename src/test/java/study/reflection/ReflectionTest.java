@@ -39,11 +39,9 @@ public class ReflectionTest {
         Method[] methods = carClass.getDeclaredMethods();
         Car car = new Car(carName, carPrice);
 
-        Arrays.stream(methods).filter(method -> method.getName().startsWith("test"));
-
         for (Method method : methods) {
             String name = method.getName();
-            if (name.startsWith("test")){
+            if (name.startsWith("test")) {
                 Object invoke = method.invoke(car);
                 assertTrue(invoke.toString().contains("test"));
             }
@@ -59,9 +57,8 @@ public class ReflectionTest {
 
         for (Method method : methods) {
             boolean isPresent = method.isAnnotationPresent(PrintView.class);
-            if(isPresent){
-                Object invoke = method.invoke(car);
-                logger.debug((String) invoke);
+            if (isPresent) {
+                method.invoke(car);
                 assertTrue(isPresent);
             }
         }
@@ -70,22 +67,36 @@ public class ReflectionTest {
     @Test
     @DisplayName("요구사항 4 - private field에 값 할당")
     void testPrivateFieldAccess() throws IllegalAccessException {
+        // 생성자 없이 private 필드에 값 넣기
+        // Car.class 로 private 필드의 정보 가져옴
         Class<Car> carClass = Car.class;
         Field[] declaredFields = carClass.getDeclaredFields();
-        Car car = new Car(carName, carPrice);
+        // 생성자 X
+        Car car = new Car();
 
-        HashMap<String, Object> hashMap = new HashMap<>();
+        // private 필드에 값 할당
+        for (Field declaredField : declaredFields) {
+            declaredField.setAccessible(true);
+            if (declaredField.getName().equals("name")) {
+                declaredField.set(car, carName);
+            } else if (declaredField.getName().equals("price")) {
+                declaredField.set(car, carPrice);
+            }
+        }
 
-        hashMap.put("name",carName);
-        hashMap.put("price",carPrice);
+        // 검증
+        Assertions.assertThat(car.getName()).isEqualTo(carName);
+        Assertions.assertThat(car.getPrice()).isEqualTo(carPrice);
     }
 
     @Test
     @DisplayName("요구사항 5 - 인자를 가진 생성자의 인스턴스 생성")
-    void testConstructorWithArgs() {
+    void constructorWithArgs() throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
         Class<Car> carClass = Car.class;
-        logger.debug(carClass.getName());
+        Constructor<Car> constructor = carClass.getDeclaredConstructor(String.class, int.class);
+        Car car = constructor.newInstance(carName, carPrice);
 
-
+        Assertions.assertThat(car.getName()).isEqualTo(carName);
+        Assertions.assertThat(car.getPrice()).isEqualTo(carPrice);
     }
 }
