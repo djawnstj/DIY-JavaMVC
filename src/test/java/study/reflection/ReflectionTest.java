@@ -1,21 +1,17 @@
 package study.reflection;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
+import java.lang.reflect.*;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.assertAll;
 
 public class ReflectionTest {
     private static final Logger logger = LoggerFactory.getLogger(ReflectionTest.class);
@@ -23,17 +19,33 @@ public class ReflectionTest {
     @Test
     @DisplayName("Car 객체 정보 가져오기")
     void showClass() {
+
+        String carClassName = "study.reflection.Car";
+        String carField1 = "name";
+        String carField2 = "price";
+        String carMethod1 = "getName";
+        String carMethod2 = "printView";
+        String carMethod3 = "getPrice";
+        String carMethod4 = "testGetPrice";
+        String carMethod5 = "testGetName";
         Class<Car> carClass = Car.class;
-        logger.debug(carClass.getName());
 
-        for(Field field : carClass.getDeclaredFields()){
-            logger.debug(field.getName());
-        }
 
-        for(Method method : carClass.getDeclaredMethods()) {
-            logger.info(method.getName());
-        }
+        Stream<String> fieldStream = Arrays.stream(carClass.getDeclaredFields())
+                .map(Field::getName);
+        List<String> fieldList = fieldStream.collect(Collectors.toList());
 
+        Stream<String> methodStream = Arrays.stream(carClass.getDeclaredMethods())
+                .map(Method::getName);
+        List<String> methodList = methodStream.collect(Collectors.toList());
+
+        assertThat(carClass.getName()).isEqualTo(carClassName);
+        assertThat(fieldList)
+                .hasSize(2)
+                .containsExactlyInAnyOrder(carField1, carField2);
+        assertThat(methodList)
+                .hasSize(5)
+                .containsExactlyInAnyOrder(carMethod1, carMethod2, carMethod3, carMethod4, carMethod5);
     }
 
     @Test
@@ -65,13 +77,19 @@ public class ReflectionTest {
 
     @Test
     @DisplayName("@PrintView 어노테이션 메서드 실행")
-    void testAnnotationMethodRun() throws NoSuchMethodException, SecurityException {
-        String printView = "printView";
+    void testAnnotationMethodRun() throws SecurityException {
         Class<Car> carClass = Car.class;
-
-        // 지금 내가 지정해서 @PrintView가 있는지 체크한 상황
-        Method printViewMethod = carClass.getMethod(printView);
-        printViewMethod.isAnnotationPresent(PrintView.class);
+        Arrays.stream(carClass.getDeclaredMethods())
+                .peek(method -> {
+                    if (method.isAnnotationPresent(PrintView.class)) {
+                        try {
+                            method.invoke(new Car());
+                        } catch (Exception e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                })
+                .collect(Collectors.toList());
     }
 
     @Test
@@ -92,8 +110,28 @@ public class ReflectionTest {
         nameField.set(carInstance, newName);
         priceField.set(carInstance, newPrice);
 
-        Assertions.assertThat(carInstance.getName()).isEqualTo(newName);
-        Assertions.assertThat(carInstance.getPrice()).isEqualTo(newPrice);
+        assertThat(carInstance.getName()).isEqualTo(newName);
+        assertThat(carInstance.getPrice()).isEqualTo(newPrice);
+    }
+
+    @Test
+    @DisplayName("인자를 가진 생성자의 인스턴스 생성")
+    void constructorWithArgs() throws InvocationTargetException, InstantiationException, IllegalAccessException, NoSuchMethodException {
+        String name = "carName";
+        int price = 9900;
+        Class<Car> carClass = Car.class;
+
+        Constructor<?>[] carConstructors = carClass.getDeclaredConstructors();
+
+        List<Constructor<?>> carConstructorsWithParam = Arrays.stream(carConstructors).filter(constructor -> {
+            try {
+                return constructor.getGenericParameterTypes().length > 0;
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }).collect(Collectors.toList());
+
+
     }
 
 }
