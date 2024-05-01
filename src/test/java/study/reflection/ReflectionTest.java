@@ -121,17 +121,12 @@ public class ReflectionTest {
         int price = 9900;
         Class<Car> carClass = Car.class;
 
-        Constructor<?>[] carConstructors = carClass.getDeclaredConstructors();
+        Constructor<Car> carConstructorWithParam = carClass.getConstructor(String.class, int.class);
 
-        List<Constructor<?>> carConstructorsWithParam = Arrays.stream(carConstructors).filter(constructor -> {
-            try {
-                return constructor.getGenericParameterTypes().length > 0;
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        }).collect(Collectors.toList());
+        Car carInstance = carConstructorWithParam.newInstance(name, price);
 
-
+        assertThat(carInstance.getName()).isEqualTo(name);
+        assertThat(carInstance.getPrice()).isEqualTo(price);
     }
 
 }
