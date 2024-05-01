@@ -7,24 +7,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.*;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-
-import static org.junit.jupiter.api.Assertions.*;
-
+import java.util.*;
 
 public class ReflectionTest {
     private static final Logger logger = LoggerFactory.getLogger(ReflectionTest.class);
 
-    String carName = "k5";
-    int carPrice = 10000;
+
 
     @Test
     @DisplayName("요구사항 1 - 클래스 정보 출력")
     void showClass() {
         Class<Car> carClass = Car.class;
         // 요구사항 1 - 클래스 정보 출력
+        // 필드 생성자 메서드 출력
         logger.debug(Arrays.toString(carClass.getConstructors()));
         logger.debug(Arrays.toString(carClass.getFields()));
         logger.debug(Arrays.toString(carClass.getMethods()));
@@ -37,15 +32,22 @@ public class ReflectionTest {
     void testMethodRun() throws IllegalAccessException, InvocationTargetException {
         Class<Car> carClass = Car.class;
         Method[] methods = carClass.getDeclaredMethods();
+        int testCount = 0;
+        int testCase = 2;
+        String carName = "k5";
+        int carPrice = 10000;
         Car car = new Car(carName, carPrice);
 
         for (Method method : methods) {
             String name = method.getName();
             if (name.startsWith("test")) {
                 Object invoke = method.invoke(car);
-                assertTrue(invoke.toString().contains("test"));
+                logger.debug(invoke.toString());
+                testCount++;
             }
         }
+
+        Assertions.assertThat(testCount).isEqualTo(testCase);
     }
 
     @Test
@@ -53,15 +55,20 @@ public class ReflectionTest {
     void testPrintViewInterface() throws InvocationTargetException, IllegalAccessException {
         Class<Car> carClass = Car.class;
         Method[] methods = carClass.getDeclaredMethods();
+        String carName = "k5";
+        int carPrice = 10000;
+        int testCase = 0;
+        int testAnswer = 1;
         Car car = new Car(carName, carPrice);
 
         for (Method method : methods) {
-            boolean isPresent = method.isAnnotationPresent(PrintView.class);
-            if (isPresent) {
+            if(method.isAnnotationPresent(PrintView.class)){
                 method.invoke(car);
-                assertTrue(isPresent);
+                testCase++;
             }
         }
+
+        Assertions.assertThat(testCase).isEqualTo(testAnswer);
     }
 
     @Test
@@ -71,6 +78,8 @@ public class ReflectionTest {
         // Car.class 로 private 필드의 정보 가져옴
         Class<Car> carClass = Car.class;
         Field[] declaredFields = carClass.getDeclaredFields();
+        String carName = "k5";
+        int carPrice = 10000;
         // 생성자 X
         Car car = new Car();
 
@@ -94,6 +103,8 @@ public class ReflectionTest {
     void constructorWithArgs() throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
         Class<Car> carClass = Car.class;
         Constructor<Car> constructor = carClass.getDeclaredConstructor(String.class, int.class);
+        String carName = "k5";
+        int carPrice = 10000;
         Car car = constructor.newInstance(carName, carPrice);
 
         Assertions.assertThat(car.getName()).isEqualTo(carName);

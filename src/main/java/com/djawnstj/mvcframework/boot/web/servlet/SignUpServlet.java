@@ -41,10 +41,7 @@ public class SignUpServlet extends HttpServlet {
         User user = new User(id,pw);
         UserRepository.save(user);
 
-        RequestDispatcher dispatcher = req.getRequestDispatcher("home.jsp");
-        dispatcher.forward(req, res);
-
-//        PrintWriter out = res.getWriter();
-//        out.print(id+","+pw);
+        PrintWriter out = res.getWriter();
+        out.print(id+","+pw);
     }
 }

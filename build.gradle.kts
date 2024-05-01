@@ -22,6 +22,9 @@ dependencies {
     // 로그백
     implementation("ch.qos.logback:logback-classic:1.4.7")
 
+    // 리플렉션
+    implementation ("org.reflections:reflections:0.10.2")
+
     // 테스트
     testImplementation(platform("org.junit:junit-bom:5.9.1"))
     testImplementation("org.junit.jupiter:junit-jupiter")
