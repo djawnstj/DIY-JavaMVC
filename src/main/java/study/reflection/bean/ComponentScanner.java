@@ -1,12 +1,9 @@
 package study.reflection.bean;
 
-import org.reflections.Reflections;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 public class ComponentScanner {
     public List<Class<?>> scan(String basePackage) throws IOException, ClassNotFoundException {
