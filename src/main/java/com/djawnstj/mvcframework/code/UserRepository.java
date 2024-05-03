@@ -1,4 +1,6 @@
-package study.reflection;
+package com.djawnstj.mvcframework.code;
+
+import com.djawnstj.mvcframework.annotation.Repository;
 
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -16,4 +18,3 @@ public class UserRepository {
         return users.values();
     }
 }
-
