@@ -25,7 +25,7 @@ import java.util.List;
 class SignUpServletTest {
 
     @Test
-    void SIGNUP_SERVLET_RESPONSE() throws IOException, InterruptedException {
+    void SIGNUP_SERVLET_RESPONSE() throws IOException, InterruptedException, ClassNotFoundException {
         // given
         MvcApplicationMain.main(new String[0]);
         String url = "http://localhost:8080/sign-up";
@@ -43,7 +43,7 @@ class SignUpServletTest {
     }
 
     @Test
-    void SIGNUP_TEST() throws IOException {
+    void SIGNUP_TEST() throws IOException, ClassNotFoundException {
         // given
         MvcApplicationMain.main(new String[0]);
         String url = "http://localhost:8080/sign-up";

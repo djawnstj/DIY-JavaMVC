@@ -5,6 +5,7 @@ import com.djawnstj.mvcframework.boot.web.servlet.user.User;
 import com.djawnstj.mvcframework.boot.web.servlet.user.UserRepository;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
 import java.util.Collection;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -13,7 +14,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 class UserServletTest {
 
     @Test
-    void FIND_ALL_USERS() {
+    void FIND_ALL_USERS() throws IOException, ClassNotFoundException {
         MvcApplicationMain.main(new String[0]);
 
         User user1 = new User("user1", "1234");
