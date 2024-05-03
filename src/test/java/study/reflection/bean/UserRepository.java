@@ -1,5 +1,7 @@
 package study.reflection.bean;
 
+import com.djawnstj.mvcframework.bean.annotation.Repository;
+
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
