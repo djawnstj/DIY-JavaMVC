@@ -1,6 +1,6 @@
-package study.reflection.bean;
+package com.djawnstj.mvcframework.bean;
 
-import com.djawnstj.mvcframework.bean.annotation.Service;
+import com.djawnstj.mvcframework.annotation.Service;
 
 @Service
 public class UserService {

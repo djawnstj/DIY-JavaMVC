@@ -1,4 +1,4 @@
-package study.reflection.bean;
+package com.djawnstj.mvcframework.bean;
 
 public class User {
     private final String id;

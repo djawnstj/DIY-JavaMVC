@@ -1,6 +1,6 @@
-package study.reflection.bean;
+package com.djawnstj.mvcframework.bean;
 
-import com.djawnstj.mvcframework.bean.annotation.Repository;
+import com.djawnstj.mvcframework.annotation.Repository;
 
 import java.util.Collection;
 import java.util.LinkedHashMap;
