@@ -14,7 +14,7 @@ public class BeanFactory {
         reflections = new Reflections(basePackage);
     }
 
-    public Set<Class<?>> scanAnnotation(Class<? extends Annotation> annotation) {
+    public Set<Class<?>> scanAnnotationClasses(Class<? extends Annotation> annotation) {
         return reflections.getTypesAnnotatedWith(annotation)
                 .stream()
                 .filter(type -> !(type.isAnnotation() && type.isInterface()))

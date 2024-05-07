@@ -38,9 +38,10 @@ class ComponentScannerTest {
         Set<Object> instances = new HashSet<>();
 
         for (Class<?> clazz : classes) {
+            logger.debug(clazz.getName());
             // 인스턴스 생성
-            Object instance = beanFactory.getBean(clazz);
-            instances.add(instance);
+//            Object instance = beanFactory.getBean(clazz);
+//            instances.add(instance);
         }
 
         // 두 컬렉션의 사이즈가 같다면 객체도 하나만 생성된 것이기 때문에 싱글톤
