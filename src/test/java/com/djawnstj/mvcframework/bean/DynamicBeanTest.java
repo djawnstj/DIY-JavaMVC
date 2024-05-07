@@ -11,10 +11,11 @@ public class DynamicBeanTest {
     @Test
     @DisplayName("조회한 클래스 정보들을 이용해 빈 생성")
     void createBean() {
+        final String basePackage = "com.djawnstj.mvcframework";
         ComponentScanner componentScanner = new ComponentScanner();
         BeanFactory beanFactory = new BeanFactory();
 
-        Set<Class<?>> scanSet = componentScanner.scan(Service.class);
+        Set<Class<?>> scanSet = componentScanner.scan(basePackage, Service.class);
 
         scanSet.forEach(aClass -> {
             try {

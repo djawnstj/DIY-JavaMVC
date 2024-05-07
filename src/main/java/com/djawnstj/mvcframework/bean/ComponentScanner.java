@@ -7,8 +7,6 @@ import java.util.Set;
 
 public class ComponentScanner {
 
-    private final String basePackage = "com.djawnstj.mvcframework";
-
 //    public List<Class<?>> scan(String basePackage) throws IOException, ClassNotFoundException {
 //        List<Class<?>> classes = new ArrayList<>();
 //        String path = basePackage.replace(".", "/");
@@ -27,7 +25,7 @@ public class ComponentScanner {
 //        return classes;
 //    }
 
-    public Set<Class<?>> scan(Class<? extends Annotation> annotation) {
+    public Set<Class<?>> scan(String basePackage, Class<? extends Annotation> annotation) {
         final Reflections reflections = new Reflections(basePackage);
         return reflections.getTypesAnnotatedWith(annotation);
     }
