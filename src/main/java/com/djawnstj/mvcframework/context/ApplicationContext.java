@@ -1,15 +1,15 @@
 package com.djawnstj.mvcframework.context;
 
+import com.djawnstj.mvcframework.annotation.Autowired;
 import com.djawnstj.mvcframework.annotation.Component;
 import com.djawnstj.mvcframework.bean.BeanFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class ApplicationContext {
 
@@ -38,6 +38,7 @@ public class ApplicationContext {
     public void init() {
         // init시에 빈 팩토리 객체에 내부에 있는 어노테이션된 클래스들을 모두 찾아 가져오는 메서드 실행
         Set<Class<?>> annotationClasses = factory.scanAnnotationClasses(Component.class);
+        findAutowiredAnnotations(annotationClasses);
         // 위에 찾은 클래스들을 beanClasses에 저장
         beanClasses.addAll(annotationClasses);
         // 빈을 동적으로 생성하는 메서드 실행
@@ -57,6 +58,17 @@ public class ApplicationContext {
                     throw new RuntimeException(e);
                 }
             }
+        }
+    }
+
+    // @Autowired 어노테이션을 모두 찾는다.
+    // 클래스의 모든 정보를 가져온다.
+    public void findAutowiredAnnotations(Set<Class<?>> annotationClasses) {
+        for (Class<?> annotationClass : annotationClasses) {
+            Field[] declaredFields = annotationClass.getDeclaredFields();
+            Constructor<?>[] declaredConstructors = annotationClass.getDeclaredConstructors();
+            logger.debug(Arrays.toString(declaredFields));
+            logger.debug(Arrays.toString(declaredConstructors));
         }
     }
 
