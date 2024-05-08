@@ -47,18 +47,20 @@ public class ApplicationContext {
     private void createBeans(Set<Class<?>> classes) {
         // 컴포넌트 어노테이션이 적용된 모든 클래스를 저장한 Set
         for (Class<?> beanClass : classes) {
-            try {
-                Object instance = beanClass.getDeclaredConstructor().newInstance();
-                // {클래스 : 인스턴스} 로 hashmap에 저장
-                beans.put(beanClass,instance);
-            } catch (InstantiationException | IllegalAccessException | InvocationTargetException |
-                     NoSuchMethodException e) {
-                throw new RuntimeException(e);
+            if (!beans.containsKey(beanClass)) {
+                try {
+                    Object instance = beanClass.getDeclaredConstructor().newInstance();
+                    // {클래스 : 인스턴스} 로 hashmap에 저장
+                    beans.put(beanClass, instance);
+                } catch (InstantiationException | IllegalAccessException | InvocationTargetException |
+                         NoSuchMethodException e) {
+                    throw new RuntimeException(e);
+                }
             }
         }
     }
 
-    public Object getBean(Class<?> clazz){
+    public Object getBean(Class<?> clazz) {
         return beans.get(clazz);
     }
 }
