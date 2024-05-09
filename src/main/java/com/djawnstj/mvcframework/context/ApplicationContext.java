@@ -67,12 +67,10 @@ public class ApplicationContext {
         for (Class<?> annotationClass : annotationClasses) {
             Field[] declaredFields = annotationClass.getDeclaredFields();
             Constructor<?>[] declaredConstructors = annotationClass.getDeclaredConstructors();
-            logger.debug(Arrays.toString(declaredFields));
-            logger.debug(Arrays.toString(declaredConstructors));
         }
     }
 
-    public Object getBean(Class<?> clazz) {
-        return beans.get(clazz);
+    public <T> T getBean(Class<T> clazz) {
+        return clazz.cast(beans.get(clazz));
     }
 }

@@ -10,9 +10,7 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
-
-class ComponentScannerTest {
+class ApplicationContextTest {
     private static final Logger logger = LoggerFactory.getLogger(ReflectionTest.class);
 
     private ApplicationContext applicationContext;
@@ -20,12 +18,23 @@ class ComponentScannerTest {
     @BeforeEach
     void setUp() {
         applicationContext = new ApplicationContext("com.djawnstj.mvcframework");
+    }
+
+    @Test
+    @DisplayName("init 테스트")
+    void testInit() {
         applicationContext.init();
+
+        UserService bean = applicationContext.getBean(UserService.class);
+
+        Assertions.assertThat(bean).isNotNull();
     }
 
     @Test
     @DisplayName("어노테이션 조회 테스트")
-    void testAnnotation() {
+    void annotationTest() {
+        applicationContext.init();
+
         Object bean1 = applicationContext.getBean(UserService.class);
         Object bean2 = applicationContext.getBean(UserRepository.class);
 
@@ -35,7 +44,9 @@ class ComponentScannerTest {
 
     @Test
     @DisplayName("빈 등록 및 조회 테스트 - 모든 객체는 싱글톤 패턴으로 구현")
-    void addBeanTest() {
+    void addBeanSingletonTest() {
+        applicationContext.init();
+
         Object bean1 = applicationContext.getBean(UserService.class);
         Object bean2 = applicationContext.getBean(UserService.class);
 
