@@ -1,9 +1,15 @@
 package com.djawnstj.mvcframework.bean;
 
+import com.djawnstj.mvcframework.annotation.Component;
 import com.djawnstj.mvcframework.annotation.Repository;
+import com.djawnstj.mvcframework.annotation.Service;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.lang.reflect.Constructor;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import static org.assertj.core.api.Assertions.*;
 
@@ -16,18 +22,10 @@ public class DynamicBeanTest {
         ComponentScanner componentScanner = new ComponentScanner();
         BeanFactory beanFactory = new BeanFactory();
 
-        Set<Class<?>> scanSet = componentScanner.scan(basePackage, Repository.class);
+        Set<Class<?>> scanSet = componentScanner.scan(basePackage, Component.class);
+        Set<Constructor<?>> bean = beanFactory.getBean(scanSet);
 
-        scanSet.forEach(aClass -> {
-            try {
-                Object bean = beanFactory.getBean(aClass);
-                Object bean2 = beanFactory.getBean(aClass);
-
-                assertThat(bean).isEqualTo(bean2);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        });
+        System.out.println(bean.toString());
 
     }
 

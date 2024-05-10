@@ -4,6 +4,7 @@ import org.reflections.Reflections;
 
 import java.lang.annotation.Annotation;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class ComponentScanner {
 
@@ -27,7 +28,14 @@ public class ComponentScanner {
 
     public Set<Class<?>> scan(String basePackage, Class<? extends Annotation> annotation) {
         final Reflections reflections = new Reflections(basePackage);
-        return reflections.getTypesAnnotatedWith(annotation);
+
+        return reflections.getTypesAnnotatedWith(annotation)
+                .stream().filter(this::filteringInterface)
+                .collect(Collectors.toSet());
+    }
+
+    private boolean filteringInterface(Class<?> clazz) {
+        return !clazz.isAnnotation();
     }
 
 }
