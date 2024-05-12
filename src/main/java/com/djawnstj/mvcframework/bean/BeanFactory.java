@@ -1,25 +1,35 @@
 package com.djawnstj.mvcframework.bean;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class BeanFactory {
 
-    private final Map<String, Object> bean = new HashMap<>();
+    private final String packageName;
+    private final Map<String, Object> beanMap = new HashMap<>();
 
-    public Map<String, Object> getBean(Set<Class<?>> classSet) {
+    public void init(Class<? extends Annotation> clazz) {
+        ComponentScanner componentScanner = new ComponentScanner();
+        Set<Class<?>> scanSet = componentScanner.scan(packageName, clazz);
+        initBeanMap(scanSet);
+    }
+
+    public BeanFactory(String packageName) {
+        this.packageName = packageName;
+    }
+
+    private void initBeanMap(Set<Class<?>> classSet) {
         List<Constructor<?>> defaultConstructors = getDefaultConstructor(classSet);
 
         defaultConstructors.forEach(constructor -> {
             try {
-                bean.put(constructor.getName(), constructor.newInstance());
+                beanMap.put(constructor.getName(), constructor.newInstance());
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
         });
-
-        return bean;
     }
 
     private List<Constructor<?>> getDefaultConstructor(Set<Class<?>> classSet) {
@@ -38,6 +48,10 @@ public class BeanFactory {
         });
 
         return allDeclaredConstructors;
+    }
+
+    public Object getBean(Class<?> clazz) {
+        return beanMap.get(clazz.getName());
     }
 
 }
