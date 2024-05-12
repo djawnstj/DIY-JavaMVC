@@ -25,6 +25,9 @@ dependencies {
     testImplementation(platform("org.junit:junit-bom:5.9.1"))
     testImplementation("org.junit.jupiter:junit-jupiter")
     testImplementation("org.assertj:assertj-core:3.25.3")
+    
+    // 리플렉션 의존성 주입
+    implementation("org.reflections:reflections:0.10.2")
 }
 
 tasks.test {
