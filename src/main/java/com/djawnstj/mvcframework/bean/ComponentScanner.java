@@ -30,8 +30,7 @@ public class ComponentScanner {
         final Reflections reflections = new Reflections(basePackage);
 
         return reflections.getTypesAnnotatedWith(annotation)
-                .stream().filter(clazz -> !clazz.isAnnotation())
-                .filter(clazz -> !clazz.isInterface())
+                .stream().filter(clazz -> !clazz.isAnnotation() && !clazz.isInterface())
                 .collect(Collectors.toSet());
     }
 

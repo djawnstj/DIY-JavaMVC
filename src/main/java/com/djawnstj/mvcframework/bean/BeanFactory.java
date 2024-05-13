@@ -1,6 +1,7 @@
 package com.djawnstj.mvcframework.bean;
 
-import java.lang.annotation.Annotation;
+import com.djawnstj.mvcframework.annotation.Component;
+
 import java.lang.reflect.Constructor;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -10,9 +11,9 @@ public class BeanFactory {
     private final String packageName;
     private final Map<String, Object> beanMap = new HashMap<>();
 
-    public void init(Class<? extends Annotation> clazz) {
+    public void init() {
         ComponentScanner componentScanner = new ComponentScanner();
-        Set<Class<?>> scanSet = componentScanner.scan(packageName, clazz);
+        Set<Class<?>> scanSet = componentScanner.scan(packageName, Component.class);
         initBeanMap(scanSet);
     }
 
