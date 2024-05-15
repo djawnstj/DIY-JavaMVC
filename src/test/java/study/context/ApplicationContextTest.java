@@ -55,4 +55,19 @@ class ApplicationContextTest {
                 () -> Assertions.assertThat(bean2).isNotNull(),
                 () -> Assertions.assertThat(bean1).isSameAs(bean2));
     }
+
+    @Test
+    @DisplayName("빈 등록 테스트 - 싱글톤 테스트")
+    void singletonTest() {
+        ApplicationContext applicationContext = new ApplicationContext("com.djawnstj.mvcframework");
+        applicationContext.init();
+
+        final UserService userService = applicationContext.getBean(UserService.class);
+        final UserRepository userRepository = applicationContext.getBean(UserRepository.class);
+
+        assertAll("foo",
+                () -> Assertions.assertThat(userService).isNotNull(),
+                () -> Assertions.assertThat(userRepository).isNotNull(),
+                () -> Assertions.assertThat(userService.userRepository).isEqualTo(userRepository));
+    }
 }
