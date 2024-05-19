@@ -26,7 +26,7 @@ public class ComponentScanner {
 //        return classes;
 //    }
 
-    public Set<Class<?>> scan(String basePackage, Class<? extends Annotation> annotation) {
+    public Set<Class<?>> scan(final String basePackage, final Class<? extends Annotation> annotation) {
         final Reflections reflections = new Reflections(basePackage);
 
         return reflections.getTypesAnnotatedWith(annotation)

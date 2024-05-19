@@ -3,6 +3,9 @@ package com.djawnstj.mvcframework.bean;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.lang.reflect.Constructor;
+import java.util.HashMap;
+
 import static org.assertj.core.api.Assertions.*;
 
 public class BeanFactoryTest {
@@ -22,12 +25,16 @@ public class BeanFactoryTest {
 
     @Test
     @DisplayName("@Autowired 애너테이션이 붙은 생성자의 파라미터 주입")
-    void checkEqualsDependencyAndBean() {
+    void getConstructorBeanMap() {
         final String basePackage = "com.djawnstj.mvcframework";
         BeanFactory beanFactory = new BeanFactory(basePackage);
         beanFactory.init();
-        UserRepository userRepository = (UserRepository) beanFactory.getBean(UserRepository.class);
-        UserService userService = (UserService) beanFactory.getBean(UserService.class);
+
+        HashMap<String, Constructor<?>> constructorBeanMap = beanFactory.getConstructorBeanMap();
+//        Constructor<?> constructorBeanMap = beanFactory.getConstructorBeanMap(UserService.class);
+
+        Object bean = beanFactory.getBean(UserService.class);
+//        UserRepository userRepository = (UserRepository) beanFactory.getBean(UserRepository.class);
 
     }
 

@@ -1,5 +1,6 @@
 package com.djawnstj.mvcframework.bean;
 
+import com.djawnstj.mvcframework.annotation.AutoWired;
 import com.djawnstj.mvcframework.annotation.Component;
 
 import java.lang.reflect.Constructor;
@@ -9,19 +10,23 @@ import java.util.stream.Collectors;
 public class BeanFactory {
 
     private final String packageName;
-    private final Map<String, Object> beanMap = new HashMap<>();
+    private final ComponentScanner componentScanner = new ComponentScanner();
+    private final HashMap<String, Object> beanMap = new HashMap<>();
+    private final HashMap<String, Constructor<?>> constructorBeanMap = new HashMap<>();
 
     public void init() {
-        ComponentScanner componentScanner = new ComponentScanner();
         Set<Class<?>> scanSet = componentScanner.scan(packageName, Component.class);
+
         initBeanMap(scanSet);
+
+        initConstructorBeanMap(scanSet);
     }
 
-    public BeanFactory(String packageName) {
+    public BeanFactory(final String packageName) {
         this.packageName = packageName;
     }
 
-    private void initBeanMap(Set<Class<?>> classSet) {
+    private void initBeanMap(final Set<Class<?>> classSet) {
         List<Constructor<?>> defaultConstructors = getDefaultConstructor(classSet);
 
         defaultConstructors.forEach(constructor -> {
@@ -33,7 +38,56 @@ public class BeanFactory {
         });
     }
 
-    private List<Constructor<?>> getDefaultConstructor(Set<Class<?>> classSet) {
+    private void initConstructorBeanMap(final Set<Class<?>> classSet) {
+        List<Constructor<?>> constructors = checkConstructorsBeforeGetAutoWired(classSet);
+        List<Constructor<?>> autoWiredConstructors = getAutoWiredConstructors(constructors);
+
+        Constructor<?> autoWiredConstructor = getAutoWiredConstructor(autoWiredConstructors);
+        autoWiredConstructor.setAccessible(true);
+        constructorBeanMap.put(autoWiredConstructor.getName(), autoWiredConstructor);
+    }
+
+    private List<Constructor<?>> checkConstructorsBeforeGetAutoWired(final Set<Class<?>> classSet) {
+        List<Constructor<?>> declaredConstructors = new ArrayList<>();
+
+        classSet.forEach(clazz -> {
+            if (constructorBeanMap.containsKey(clazz.getName())) {
+                return;
+            }
+
+            if (clazz.getDeclaredConstructors().length == 1) {
+                constructorBeanMap.put(clazz.getName(), clazz.getDeclaredConstructors()[0]);
+                return;
+            }
+
+            declaredConstructors.addAll(List.of(clazz.getDeclaredConstructors()));
+
+        });
+
+        return declaredConstructors;
+    }
+
+    private List<Constructor<?>> getAutoWiredConstructors(final List<Constructor<?>> list) {
+        List<Constructor<?>> autowiredConstructors = new ArrayList<>();
+
+        list.forEach(clazz -> {
+            if (clazz.isAnnotationPresent(AutoWired.class)) {
+                autowiredConstructors.add(clazz);
+            }
+        });
+
+        return autowiredConstructors;
+    }
+
+    private Constructor<?> getAutoWiredConstructor(List<Constructor<?>> autoWiredConstructors) {
+        if (autoWiredConstructors.size() > 1) {
+            throw new RuntimeException();
+        }
+
+        return autoWiredConstructors.get(0);
+    }
+
+    private List<Constructor<?>> getDefaultConstructor(final Set<Class<?>> classSet) {
         List<Constructor<?>> allDeclaredConstructors = getAllDeclaredConstructors(classSet);
 
         return allDeclaredConstructors.stream()
@@ -41,7 +95,7 @@ public class BeanFactory {
                 .collect(Collectors.toList());
     }
 
-    private List<Constructor<?>> getAllDeclaredConstructors(Set<Class<?>> classSet) {
+    private List<Constructor<?>> getAllDeclaredConstructors(final Set<Class<?>> classSet) {
         List<Constructor<?>> allDeclaredConstructors = new ArrayList<>();
 
         classSet.forEach(clazz -> {
@@ -51,8 +105,12 @@ public class BeanFactory {
         return allDeclaredConstructors;
     }
 
-    public Object getBean(Class<?> clazz) {
+    public Object getBean(final Class<?> clazz) {
         return beanMap.get(clazz.getName());
+    }
+
+    public HashMap<String, Constructor<?>> getConstructorBeanMap() {
+        return constructorBeanMap;
     }
 
 }
