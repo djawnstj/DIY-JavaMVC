@@ -1,5 +1,6 @@
 package context;
 
+import com.djawnstj.mvcframework.code.UserController;
 import com.djawnstj.mvcframework.code.UserRepository;
 import com.djawnstj.mvcframework.code.UserService;
 import com.djawnstj.mvcframework.context.ApplicationContext;
@@ -57,17 +58,34 @@ class ApplicationContextTest {
     }
 
     @Test
-    @DisplayName("빈 등록 테스트 - 싱글톤 테스트")
+    @DisplayName("빈 등록 테스트 - 싱글톤 테스트 - 1")
     void singletonTest() {
         ApplicationContext applicationContext = new ApplicationContext("com.djawnstj.mvcframework");
         applicationContext.init();
 
+        final UserRepository userRepository = applicationContext.getBean(UserRepository.class);
+        final UserService userService = applicationContext.getBean(UserService.class);
+
+        assertAll("singletonTest",
+                () -> Assertions.assertThat(userService).isNotNull(),
+                () -> Assertions.assertThat(userRepository).isNotNull(),
+                () -> Assertions.assertThat(userService.getUserRepository()).isEqualTo(userRepository));
+    }
+
+    @Test
+    @DisplayName("빈 등록 테스트 - 싱글톤 테스트 - 2")
+    void singletonTest2() {
+        ApplicationContext applicationContext = new ApplicationContext("com.djawnstj.mvcframework");
+        applicationContext.init();
+
+        final UserController userController = applicationContext.getBean(UserController.class);
         final UserService userService = applicationContext.getBean(UserService.class);
         final UserRepository userRepository = applicationContext.getBean(UserRepository.class);
 
         assertAll("singletonTest",
                 () -> Assertions.assertThat(userService).isNotNull(),
                 () -> Assertions.assertThat(userRepository).isNotNull(),
-                () -> Assertions.assertThat(userService.userRepository).isEqualTo(userRepository));
+                () -> Assertions.assertThat(userController).isNotNull(),
+                () -> Assertions.assertThat(userController.getUserService()).isEqualTo(userService));
     }
 }

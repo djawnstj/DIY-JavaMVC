@@ -42,10 +42,10 @@ public class ApplicationContext {
 
     private void createBeansReferenceByConfiguration(final Set<Class<?>> annotationClasses) {
         for (Class<?> annotationClass : annotationClasses) {
-            if(annotationClass.isAnnotationPresent(Configuration.class)) {
+            if (annotationClass.isAnnotationPresent(Configuration.class)) {
                 Method[] declaredMethods = annotationClass.getDeclaredMethods();
                 for (Method declaredMethod : declaredMethods) {
-                    if(declaredMethod.isAnnotationPresent(Bean.class)) {
+                    if (declaredMethod.isAnnotationPresent(Bean.class)) {
                         logger.debug(declaredMethod.toString());
                     }
                 }
@@ -78,39 +78,24 @@ public class ApplicationContext {
             Object instance = constructor.newInstance(parameters);
 
             saveBean(beanClass.getSimpleName(), instance);
-        } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+        } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
             throw new RuntimeException(e);
         } finally {
             constructor.setAccessible(false);
         }
     }
 
-    private Object[] createParameters(Class<?>[] parameterTypes) throws InstantiationException, IllegalAccessException, InvocationTargetException, NoSuchMethodException {
+    private Object[] createParameters(Class<?>[] parameterTypes) {
         Object[] parameters = new Object[parameterTypes.length];
 
         for (int i = 0; i < parameters.length; i++) {
-            if (isBeanExist(parameterTypes[i])) {
-                parameters[i] = beanMap.get(parameterTypes[i].getSimpleName());
-            } else {
-                parameters[i] = createBean(parameterTypes[i]);
+            if (!isBeanExist(parameterTypes[i])) {
+                createInstance(parameterTypes[i]);
             }
+            parameters[i] = beanMap.get(parameterTypes[i].getSimpleName());
         }
 
         return parameters;
-    }
-
-    private Object createBean(Class<?> parameterType) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
-        if (isBeanExist(parameterType)) {
-            return beanMap.get(parameterType.getSimpleName());
-        }
-
-        Constructor<?> declaredConstructor = parameterType.getDeclaredConstructor();
-
-        Object instance = declaredConstructor.newInstance();
-
-        saveBean(parameterType.getSimpleName(), instance);
-
-        return instance;
     }
 
     private Constructor<?> getConstructor(final Class<?> beanClass) {
