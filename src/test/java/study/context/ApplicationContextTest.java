@@ -65,7 +65,7 @@ class ApplicationContextTest {
         final UserService userService = applicationContext.getBean(UserService.class);
         final UserRepository userRepository = applicationContext.getBean(UserRepository.class);
 
-        assertAll("foo",
+        assertAll("singletonTest",
                 () -> Assertions.assertThat(userService).isNotNull(),
                 () -> Assertions.assertThat(userRepository).isNotNull(),
                 () -> Assertions.assertThat(userService.userRepository).isEqualTo(userRepository));

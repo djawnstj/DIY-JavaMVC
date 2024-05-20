@@ -1,7 +1,9 @@
 package com.djawnstj.mvcframework.context;
 
 import com.djawnstj.mvcframework.annotation.Autowired;
+import com.djawnstj.mvcframework.annotation.Bean;
 import com.djawnstj.mvcframework.annotation.Component;
+import com.djawnstj.mvcframework.annotation.Configuration;
 import com.djawnstj.mvcframework.bean.BeanFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,10 +35,25 @@ public class ApplicationContext {
 
         beanClasses.addAll(annotationClasses);
 
-        createBean(beanClasses);
+        createBeansReferenceByConfiguration(annotationClasses);
+
+        createBeans(beanClasses);
     }
 
-    private void createBean(final Set<Class<?>> beanClasses) {
+    private void createBeansReferenceByConfiguration(final Set<Class<?>> annotationClasses) {
+        for (Class<?> annotationClass : annotationClasses) {
+            if(annotationClass.isAnnotationPresent(Configuration.class)) {
+                Method[] declaredMethods = annotationClass.getDeclaredMethods();
+                for (Method declaredMethod : declaredMethods) {
+                    if(declaredMethod.isAnnotationPresent(Bean.class)) {
+                        logger.debug(declaredMethod.toString());
+                    }
+                }
+            }
+        }
+    }
+
+    private void createBeans(final Set<Class<?>> beanClasses) {
         for (Class<?> beanClass : beanClasses) {
             if (isBeanExist(beanClass)) {
                 continue;
@@ -61,33 +78,36 @@ public class ApplicationContext {
             Object instance = constructor.newInstance(parameters);
 
             saveBean(beanClass.getSimpleName(), instance);
-        } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
+        } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
             throw new RuntimeException(e);
         } finally {
             constructor.setAccessible(false);
         }
     }
 
-    private Object[] createParameters(Class<?>[] parameterTypes) throws InstantiationException, IllegalAccessException {
+    private Object[] createParameters(Class<?>[] parameterTypes) throws InstantiationException, IllegalAccessException, InvocationTargetException, NoSuchMethodException {
         Object[] parameters = new Object[parameterTypes.length];
 
         for (int i = 0; i < parameters.length; i++) {
             if (isBeanExist(parameterTypes[i])) {
                 parameters[i] = beanMap.get(parameterTypes[i].getSimpleName());
             } else {
-                parameters[i] = createAndSaveBean(parameterTypes[i]);
+                parameters[i] = createBean(parameterTypes[i]);
             }
         }
 
         return parameters;
     }
 
-    private Object createAndSaveBean(Class<?> parameterType) throws InstantiationException, IllegalAccessException {
+    private Object createBean(Class<?> parameterType) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
         if (isBeanExist(parameterType)) {
             return beanMap.get(parameterType.getSimpleName());
         }
 
-        Object instance = parameterType.newInstance();
+        Constructor<?> declaredConstructor = parameterType.getDeclaredConstructor();
+
+        Object instance = declaredConstructor.newInstance();
+
         saveBean(parameterType.getSimpleName(), instance);
 
         return instance;
