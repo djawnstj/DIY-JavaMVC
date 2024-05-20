@@ -1,4 +1,4 @@
-package study.code;
+package code;
 
 public class Pay {
 

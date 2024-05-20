@@ -1,4 +1,4 @@
-package study.context;
+package context;
 
 import com.djawnstj.mvcframework.code.UserRepository;
 import com.djawnstj.mvcframework.code.UserService;
@@ -8,7 +8,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import study.reflection.ReflectionTest;
+import reflection.ReflectionTest;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 
