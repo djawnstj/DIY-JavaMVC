@@ -61,6 +61,14 @@ public class BeanFactory {
             }
         }
 
+        if (autowiredConstructors.size() == 0) {
+            try {
+                autowiredConstructors.add(clazz.getDeclaredConstructor());
+            } catch (NoSuchMethodException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
         if (autowiredConstructors.size() > 1) {
             throw new RuntimeException();
         }
@@ -82,7 +90,7 @@ public class BeanFactory {
             beanMap.put(autoWiredConstructor.getName(), autoWiredConstructor.newInstance(params.toArray()));
 
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("There are more than one AutoWired annotation.");
         }
 
     }

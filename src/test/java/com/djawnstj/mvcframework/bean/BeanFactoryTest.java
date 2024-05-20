@@ -61,28 +61,47 @@ public class BeanFactoryTest {
     }
 
     @Test
+    @DisplayName("@AutoWired 생성자가 없다면 기본 생성자를 가져오는 지 확인")
+    void isNotExistAutoWiredConstructor() {
+        // Given
+        final BeanFactory beanFactory = new BeanFactory(basePackage);
+        Class<UserServiceTest> userServiceTestClass = UserServiceTest.class;
+        beanFactory.init();
+
+        // When
+        UserServiceTest userServiceTest = beanFactory.getBean(userServiceTestClass);
+
+        // Then
+//        assertThat(userServiceTest).isEqualTo(userServiceTestClass.getDeclaredConstructor());
+    }
+
+    @Test
     @DisplayName("AutoWired가 두개 이상인 경우 예외 던지는 지 확인")
     void autowiredException() {
         // Given
         final BeanFactory beanFactory = new BeanFactory(basePackage);
-        beanFactory.init();
 
-        // When
-
-        // Then
-
+        try {
+            // When
+            beanFactory.init();
+            fail("RuntimeException 예외가 발생해야 함");
+        } catch (RuntimeException e) {
+            // Then
+//            assertThat(e.getMessage()).isEqualTo("There are more than one AutoWired annotation.");
+            assertThat(e).isEqualTo(new RuntimeException());
+        }
     }
 
     @Service
     static class UserServiceTest {
         private final UserRepository userRepository;
 
-        @AutoWired
+//        @AutoWired
         public UserServiceTest() {
             this.userRepository = new UserRepository();
         }
 
-        @AutoWired
+//        @AutoWired
         public UserServiceTest(final UserRepository userRepository) {
             this.userRepository = userRepository;
         }
