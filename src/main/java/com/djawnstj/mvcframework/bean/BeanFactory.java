@@ -6,111 +6,99 @@ import com.djawnstj.mvcframework.annotation.Component;
 import java.lang.reflect.Constructor;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class BeanFactory {
 
     private final String packageName;
     private final ComponentScanner componentScanner = new ComponentScanner();
     private final HashMap<String, Object> beanMap = new HashMap<>();
-    private final HashMap<String, Constructor<?>> constructorBeanMap = new HashMap<>();
 
     public void init() {
         Set<Class<?>> scanSet = componentScanner.scan(packageName, Component.class);
 
-        initBeanMap(scanSet);
+        List<Constructor<?>> autoWiredConstructors = getAutoWiredConstructors(scanSet);
+        for (Constructor<?> constructor : autoWiredConstructors) {
+            Constructor<?> autoWiredConstructor = getAutoWired(constructor.getDeclaringClass());
+            putInBeanMap(autoWiredConstructor);
+        }
 
-        initConstructorBeanMap(scanSet);
     }
 
     public BeanFactory(final String packageName) {
         this.packageName = packageName;
     }
 
-    private void initBeanMap(final Set<Class<?>> classSet) {
-        List<Constructor<?>> defaultConstructors = getDefaultConstructor(classSet);
-
-        defaultConstructors.forEach(constructor -> {
-            try {
-                beanMap.put(constructor.getName(), constructor.newInstance());
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        });
-    }
-
-    private void initConstructorBeanMap(final Set<Class<?>> classSet) {
-        List<Constructor<?>> constructors = checkConstructorsBeforeGetAutoWired(classSet);
-        List<Constructor<?>> autoWiredConstructors = getAutoWiredConstructors(constructors);
-
-        Constructor<?> autoWiredConstructor = getAutoWiredConstructor(autoWiredConstructors);
-        autoWiredConstructor.setAccessible(true);
-        constructorBeanMap.put(autoWiredConstructor.getName(), autoWiredConstructor);
-    }
-
-    private List<Constructor<?>> checkConstructorsBeforeGetAutoWired(final Set<Class<?>> classSet) {
-        List<Constructor<?>> declaredConstructors = new ArrayList<>();
-
-        classSet.forEach(clazz -> {
-            if (constructorBeanMap.containsKey(clazz.getName())) {
-                return;
-            }
-
-            if (clazz.getDeclaredConstructors().length == 1) {
-                constructorBeanMap.put(clazz.getName(), clazz.getDeclaredConstructors()[0]);
-                return;
-            }
-
-            declaredConstructors.addAll(List.of(clazz.getDeclaredConstructors()));
-
-        });
-
-        return declaredConstructors;
-    }
-
-    private List<Constructor<?>> getAutoWiredConstructors(final List<Constructor<?>> list) {
-        List<Constructor<?>> autowiredConstructors = new ArrayList<>();
-
-        list.forEach(clazz -> {
-            if (clazz.isAnnotationPresent(AutoWired.class)) {
-                autowiredConstructors.add(clazz);
-            }
-        });
-
-        return autowiredConstructors;
-    }
-
-    private Constructor<?> getAutoWiredConstructor(List<Constructor<?>> autoWiredConstructors) {
-        if (autoWiredConstructors.size() > 1) {
-            throw new RuntimeException();
-        }
-
-        return autoWiredConstructors.get(0);
-    }
-
-    private List<Constructor<?>> getDefaultConstructor(final Set<Class<?>> classSet) {
-        List<Constructor<?>> allDeclaredConstructors = getAllDeclaredConstructors(classSet);
-
-        return allDeclaredConstructors.stream()
-                .filter(constructor -> constructor.getParameters().length == 0)
+    private List<Constructor<?>> getAutoWiredConstructors(final Set<Class<?>> classSet) {
+        return classSet.stream()
+                .filter(clazz -> !beanMap.containsKey(clazz.getName()))
+                .flatMap(this::getConstructorsMoreThanOne)
                 .collect(Collectors.toList());
     }
 
-    private List<Constructor<?>> getAllDeclaredConstructors(final Set<Class<?>> classSet) {
-        List<Constructor<?>> allDeclaredConstructors = new ArrayList<>();
+    private Stream<Constructor<?>> getConstructorsMoreThanOne(final Class<?> clazz) {
+        Constructor<?>[] constructors = clazz.getDeclaredConstructors();
 
-        classSet.forEach(clazz -> {
-            allDeclaredConstructors.addAll(List.of(clazz.getDeclaredConstructors()));
-        });
+        if (constructors.length == 1) {
+            try {
+                putInBeanMap(constructors[0]);
+                return Stream.empty();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
 
-        return allDeclaredConstructors;
+        return Arrays.stream(constructors);
     }
 
-    public Object getBean(final Class<?> clazz) {
-        return beanMap.get(clazz.getName());
+    private Constructor<?> getAutoWired(final Class<?> clazz) {
+        Constructor<?>[] constructors = clazz.getDeclaredConstructors();
+        List<Constructor<?>> autowiredConstructors = new ArrayList<>();
+
+        for (Constructor<?> constructor : constructors) {
+            if (constructor.isAnnotationPresent(AutoWired.class)) {
+                autowiredConstructors.add(constructor);
+            }
+        }
+
+        if (autowiredConstructors.size() > 1) {
+            throw new RuntimeException();
+        }
+
+        return autowiredConstructors.get(0);
     }
 
-    public HashMap<String, Constructor<?>> getConstructorBeanMap() {
-        return constructorBeanMap;
+    private void putInBeanMap(final Constructor<?> autoWiredConstructor) {
+        autoWiredConstructor.setAccessible(true);
+
+        try {
+            if (autoWiredConstructor.getParameterCount() == 0) {
+                beanMap.put(autoWiredConstructor.getName(), autoWiredConstructor.newInstance());
+                return;
+            }
+
+            List<Object> params = getParametersThroughBeanMap(autoWiredConstructor);
+
+            beanMap.put(autoWiredConstructor.getName(), autoWiredConstructor.newInstance(params.toArray()));
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+    }
+
+    private List<Object> getParametersThroughBeanMap(final Constructor<?> autoWiredConstructor) {
+        Class<?>[] parameterTypes = autoWiredConstructor.getParameterTypes();
+        List<Object> params = new ArrayList<>();
+
+        for (Class<?> param : parameterTypes) {
+            params.add(beanMap.getOrDefault(param.getName(), param));
+        }
+        return params;
+    }
+
+    public <T> T getBean(final Class<T> clazz) {
+        return (T) beanMap.get(clazz.getName());
     }
 
 }

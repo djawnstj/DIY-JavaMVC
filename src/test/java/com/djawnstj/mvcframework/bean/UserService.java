@@ -18,6 +18,10 @@ public class UserService {
         this.userRepository = userRepository;
     }
 
+    public UserRepository getUserRepository() {
+        return this.userRepository;
+    }
+
     public void register(final String id, final String pw) {
         this.userRepository.save(id, new User(id, pw));
     }
