@@ -88,4 +88,19 @@ class ApplicationContextTest {
                 () -> Assertions.assertThat(userController).isNotNull(),
                 () -> Assertions.assertThat(userController.getUserService()).isEqualTo(userService));
     }
+
+    @Test
+    @DisplayName("빈 등록 테스트 - Configuration Bean 등록")
+    void configurationTest() {
+        ApplicationContext applicationContext = new ApplicationContext("com.djawnstj.mvcframework");
+        applicationContext.init();
+
+        final UserService userService = applicationContext.getBean(UserService.class);
+        final UserRepository userRepository = applicationContext.getBean(UserRepository.class);
+
+        assertAll("singletonTest",
+                () -> Assertions.assertThat(userService).isNotNull(),
+                () -> Assertions.assertThat(userRepository).isNotNull(),
+                () -> Assertions.assertThat(userService.userRepository).isEqualTo(userRepository));
+    }
 }

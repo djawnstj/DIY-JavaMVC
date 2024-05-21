@@ -8,14 +8,17 @@ import java.util.List;
 @Service
 public class UserService {
     public final UserRepository userRepository;
+    public final PayService payService;
 
     public UserService() {
         this.userRepository = new UserRepository();
+        this.payService = null;
     }
 
     @Autowired
-    public UserService(final UserRepository userRepository) {
+    public UserService(final UserRepository userRepository, final PayService payService) {
         this.userRepository = userRepository;
+        this.payService = payService;
     }
 
     public UserRepository getUserRepository() {
