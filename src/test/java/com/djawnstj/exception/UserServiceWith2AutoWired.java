@@ -1,20 +1,23 @@
-package com.djawnstj.mvcframework.bean;
+package com.djawnstj.exception;
 
 import com.djawnstj.mvcframework.annotation.AutoWired;
 import com.djawnstj.mvcframework.annotation.Service;
+import com.djawnstj.common.User;
+import com.djawnstj.common.UserRepository;
 
 import java.util.List;
 
 @Service
-public class UserService {
+public class UserServiceWith2AutoWired {
     private final UserRepository userRepository;
 
-    public UserService() {
+    @AutoWired
+    public UserServiceWith2AutoWired() {
         this.userRepository = new UserRepository();
     }
 
     @AutoWired
-    public UserService(final UserRepository userRepository) {
+    public UserServiceWith2AutoWired(final UserRepository userRepository) {
         this.userRepository = userRepository;
     }
 

@@ -1,32 +1,34 @@
 package com.djawnstj.mvcframework.bean;
 
-import com.djawnstj.mvcframework.annotation.AutoWired;
-import com.djawnstj.mvcframework.annotation.Service;
+import com.djawnstj.common.PayController;
+import com.djawnstj.common.UserRepository;
+import com.djawnstj.common.UserService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-
-import java.util.List;
 
 import static org.assertj.core.api.Assertions.*;
 
 public class BeanFactoryTest {
 
-    private final String basePackage = "com.djawnstj.mvcframework";
+    private final String basePackage = "com.djawnstj.common";
 
     @Test
     @DisplayName("조회한 클래스 정보들을 이용해 빈 생성")
     void getBean() {
+        // Given
         final BeanFactory beanFactory = new BeanFactory(basePackage);
         beanFactory.init();
 
+        // When
         Object userService1 = beanFactory.getBean(UserService.class);
         Object userService2 = beanFactory.getBean(UserService.class);
 
+        // Then
         assertThat(userService1).isSameAs(userService2);
     }
 
     @Test
-    @DisplayName("@Autowired 애너테이션이 붙은 생성자의 파라미터 주입")
+    @DisplayName("@Autowired 어노테이션이 붙은 생성자의 파라미터 주입")
     void parameterInjectionInAutoWiredConstructor() {
         // Given
         final BeanFactory beanFactory = new BeanFactory(basePackage);
@@ -43,7 +45,7 @@ public class BeanFactoryTest {
     }
 
     @Test
-    @DisplayName("컴포넌트들을 정상적으로 조회한다")
+    @DisplayName("@Component들을 정상적으로 조회한다")
     void createAllComponent() {
         // Given
         final BeanFactory beanFactory = new BeanFactory(basePackage);
@@ -61,62 +63,16 @@ public class BeanFactoryTest {
     }
 
     @Test
-    @DisplayName("@AutoWired 생성자가 없다면 기본 생성자를 가져오는 지 확인")
-    void isNotExistAutoWiredConstructor() {
-        // Given
-        final BeanFactory beanFactory = new BeanFactory(basePackage);
-        Class<UserServiceTest> userServiceTestClass = UserServiceTest.class;
-        beanFactory.init();
-
-        // When
-        UserServiceTest userServiceTest = beanFactory.getBean(userServiceTestClass);
-
-        // Then
-//        assertThat(userServiceTest).isEqualTo(userServiceTestClass.getDeclaredConstructor());
-    }
-
-    @Test
-    @DisplayName("AutoWired가 두개 이상인 경우 예외 던지는 지 확인")
+    @DisplayName("@AutoWired 어노테이션이 두 개 이상인 경우 예외를 던져야 한다")
     void autowiredException() {
         // Given
+        final String basePackage = "com.djawnstj.exception";
         final BeanFactory beanFactory = new BeanFactory(basePackage);
 
-        try {
-            // When
-            beanFactory.init();
-            fail("RuntimeException 예외가 발생해야 함");
-        } catch (RuntimeException e) {
-            // Then
-//            assertThat(e.getMessage()).isEqualTo("There are more than one AutoWired annotation.");
-            assertThat(e).isEqualTo(new RuntimeException());
-        }
-    }
-
-    @Service
-    static class UserServiceTest {
-        private final UserRepository userRepository;
-
-//        @AutoWired
-        public UserServiceTest() {
-            this.userRepository = new UserRepository();
-        }
-
-//        @AutoWired
-        public UserServiceTest(final UserRepository userRepository) {
-            this.userRepository = userRepository;
-        }
-
-        public UserRepository getUserRepository() {
-            return this.userRepository;
-        }
-
-        public void register(final String id, final String pw) {
-            this.userRepository.save(id, new User(id, pw));
-        }
-
-        public List<User> getUsers() {
-            return (List<User>) this.userRepository.findAll();
-        }
+        // When Then
+        assertThatThrownBy(beanFactory::init)
+                .isInstanceOf(RuntimeException.class)
+                .hasMessage("There are more than one AutoWired annotation.");
     }
 
 }

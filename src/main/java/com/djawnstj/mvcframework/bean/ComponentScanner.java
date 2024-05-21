@@ -27,7 +27,7 @@ public class ComponentScanner {
 //    }
 
     public Set<Class<?>> scan(final String basePackage, final Class<? extends Annotation> annotation) {
-        final Reflections reflections = new Reflections(basePackage);
+        final Reflections reflections = new Reflections("com.djawnstj.mvcframework", basePackage);
 
         return reflections.getTypesAnnotatedWith(annotation)
                 .stream().filter(clazz -> !clazz.isAnnotation() && !clazz.isInterface())

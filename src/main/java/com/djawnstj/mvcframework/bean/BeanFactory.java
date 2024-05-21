@@ -31,9 +31,13 @@ public class BeanFactory {
 
     private List<Constructor<?>> getAutoWiredConstructors(final Set<Class<?>> classSet) {
         return classSet.stream()
-                .filter(clazz -> !beanMap.containsKey(clazz.getName()))
+                .filter(this::isNotContainInBeanMap)
                 .flatMap(this::getConstructorsMoreThanOne)
                 .collect(Collectors.toList());
+    }
+
+    private boolean isNotContainInBeanMap(final Class<?> clazz) {
+        return !beanMap.containsKey(clazz.getName());
     }
 
     private Stream<Constructor<?>> getConstructorsMoreThanOne(final Class<?> clazz) {
@@ -61,7 +65,7 @@ public class BeanFactory {
             }
         }
 
-        if (autowiredConstructors.size() == 0) {
+        if (autowiredConstructors.isEmpty()) {
             try {
                 autowiredConstructors.add(clazz.getDeclaredConstructor());
             } catch (NoSuchMethodException e) {
@@ -70,7 +74,7 @@ public class BeanFactory {
         }
 
         if (autowiredConstructors.size() > 1) {
-            throw new RuntimeException();
+            throw new RuntimeException("There are more than one AutoWired annotation.");
         }
 
         return autowiredConstructors.get(0);

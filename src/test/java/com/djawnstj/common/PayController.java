@@ -1,4 +1,4 @@
-package com.djawnstj.mvcframework.bean;
+package com.djawnstj.common;
 
 import com.djawnstj.mvcframework.annotation.Component;
 
