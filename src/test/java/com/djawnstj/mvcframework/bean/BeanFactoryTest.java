@@ -17,13 +17,13 @@ public class BeanFactoryTest {
     void getBean() {
         // Given
         final BeanFactory beanFactory = new BeanFactory(basePackage);
-        beanFactory.init();
 
         // When
-        Object userService1 = beanFactory.getBean(UserService.class);
-        Object userService2 = beanFactory.getBean(UserService.class);
+        beanFactory.init();
 
         // Then
+        Object userService1 = beanFactory.getBean(UserService.class);
+        Object userService2 = beanFactory.getBean(UserService.class);
         assertThat(userService1).isSameAs(userService2);
     }
 

@@ -6,7 +6,6 @@ import com.djawnstj.mvcframework.annotation.Component;
 import java.lang.reflect.Constructor;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class BeanFactory {
 
@@ -14,99 +13,88 @@ public class BeanFactory {
     private final ComponentScanner componentScanner = new ComponentScanner();
     private final HashMap<String, Object> beanMap = new HashMap<>();
 
-    public void init() {
-        Set<Class<?>> scanSet = componentScanner.scan(packageName, Component.class);
-
-        List<Constructor<?>> autoWiredConstructors = getAutoWiredConstructors(scanSet);
-        for (Constructor<?> constructor : autoWiredConstructors) {
-            Constructor<?> autoWiredConstructor = getAutoWired(constructor.getDeclaringClass());
-            putInBeanMap(autoWiredConstructor);
-        }
-
-    }
-
     public BeanFactory(final String packageName) {
         this.packageName = packageName;
     }
 
-    private List<Constructor<?>> getAutoWiredConstructors(final Set<Class<?>> classSet) {
-        return classSet.stream()
+    public void init() {
+        // ComponentScanner에 의존하고 있다... test mocking
+        Set<Class<?>> scanSet = componentScanner.scan(packageName, Component.class);
+
+        createBeanMap(scanSet);
+
+    }
+
+    private void createBeanMap(final Set<Class<?>> classSet) {
+        classSet.stream()
                 .filter(this::isNotContainInBeanMap)
-                .flatMap(this::getConstructorsMoreThanOne)
-                .collect(Collectors.toList());
+                .forEach(this::createBean);
     }
 
     private boolean isNotContainInBeanMap(final Class<?> clazz) {
         return !beanMap.containsKey(clazz.getName());
     }
 
-    private Stream<Constructor<?>> getConstructorsMoreThanOne(final Class<?> clazz) {
-        Constructor<?>[] constructors = clazz.getDeclaredConstructors();
+    private void createBean(final Class<?> clazz) {
+        Constructor<?> constructor = getConstructor(clazz);
+        Object[] parameters = getParametersThroughBeanMap(constructor);
 
-        if (constructors.length == 1) {
-            try {
-                putInBeanMap(constructors[0]);
-                return Stream.empty();
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
+        try {
+            beanMap.put(constructor.getName(), constructor.newInstance(parameters));
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
-
-        return Arrays.stream(constructors);
     }
 
-    private Constructor<?> getAutoWired(final Class<?> clazz) {
+    private Constructor<?> getConstructor(final Class<?> clazz) {
         Constructor<?>[] constructors = clazz.getDeclaredConstructors();
-        List<Constructor<?>> autowiredConstructors = new ArrayList<>();
 
-        for (Constructor<?> constructor : constructors) {
-            if (constructor.isAnnotationPresent(AutoWired.class)) {
-                autowiredConstructors.add(constructor);
-            }
-        }
+        if (constructors.length == 1) { return constructors[0]; }
+
+        return getDefaultOrAutoWiredConstructor(clazz);
+    }
+
+    private Constructor<?> getDefaultOrAutoWiredConstructor(final Class<?> clazz) {
+        List<Constructor<?>> autowiredConstructors = findAutoWiredConstructors(clazz);
 
         if (autowiredConstructors.isEmpty()) {
-            try {
-                autowiredConstructors.add(clazz.getDeclaredConstructor());
-            } catch (NoSuchMethodException e) {
-                throw new RuntimeException(e);
-            }
+            autowiredConstructors.add(getDefaultConstructor(clazz));
         }
 
-        if (autowiredConstructors.size() > 1) {
-            throw new RuntimeException("There are more than one AutoWired annotation.");
-        }
+        validateSingleAutowiredConstructor(autowiredConstructors);
 
         return autowiredConstructors.get(0);
     }
 
-    private void putInBeanMap(final Constructor<?> autoWiredConstructor) {
-        autoWiredConstructor.setAccessible(true);
-
-        try {
-            if (autoWiredConstructor.getParameterCount() == 0) {
-                beanMap.put(autoWiredConstructor.getName(), autoWiredConstructor.newInstance());
-                return;
-            }
-
-            List<Object> params = getParametersThroughBeanMap(autoWiredConstructor);
-
-            beanMap.put(autoWiredConstructor.getName(), autoWiredConstructor.newInstance(params.toArray()));
-
-        } catch (Exception e) {
-            throw new RuntimeException("There are more than one AutoWired annotation.");
-        }
-
+    private List<Constructor<?>> findAutoWiredConstructors(final Class<?> clazz) {
+        return Arrays.stream(clazz.getDeclaredConstructors())
+                .filter(this::isAutoWiredAnnotationPresent)
+                .collect(Collectors.toList());
     }
 
-    private List<Object> getParametersThroughBeanMap(final Constructor<?> autoWiredConstructor) {
-        Class<?>[] parameterTypes = autoWiredConstructor.getParameterTypes();
-        List<Object> params = new ArrayList<>();
+    private boolean isAutoWiredAnnotationPresent(final Constructor<?> constructor) {
+        return constructor.isAnnotationPresent(AutoWired.class);
+    }
 
-        for (Class<?> param : parameterTypes) {
-            params.add(beanMap.getOrDefault(param.getName(), param));
+    private Constructor<?> getDefaultConstructor(final Class<?> clazz) {
+        try {
+            return clazz.getDeclaredConstructor();
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException(e);
         }
-        return params;
+    }
+
+    private void validateSingleAutowiredConstructor(final List<Constructor<?>> constructors) {
+        if (constructors.size() > 1) {
+            throw new RuntimeException("There are more than one AutoWired annotation.");
+        }
+    }
+
+    private Object[] getParametersThroughBeanMap(final Constructor<?> constructor) {
+        return Arrays.stream(constructor.getParameterTypes())
+                .map(parameter -> beanMap.getOrDefault(parameter.getName(), parameter))
+                .toArray();
+        // Class일 수도 있다는 게 문제. 빈 생성을 또 해줘야 한다?
     }
 
     public <T> T getBean(final Class<T> clazz) {
