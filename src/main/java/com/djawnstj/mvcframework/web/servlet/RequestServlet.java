@@ -13,7 +13,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 @WebServlet("/")
-public class RequestServlet extends HttpServlet { // 분배하는 서블릿 : dispatcherServlet
+public class RequestServlet extends HttpServlet {
 
     private static final Logger log = LoggerFactory.getLogger(RequestServlet.class);
 
