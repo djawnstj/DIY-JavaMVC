@@ -41,6 +41,7 @@ public class ApplicationContext {
         createBeans(beanClasses);
     }
 
+    // configuration 을 참조하여 생성
     private void createBeansReferenceByConfiguration(final Set<Class<?>> annotationClasses) {
         for (Class<?> annotationClass : annotationClasses) {
             if (annotationClass.isAnnotationPresent(Configuration.class)) {
