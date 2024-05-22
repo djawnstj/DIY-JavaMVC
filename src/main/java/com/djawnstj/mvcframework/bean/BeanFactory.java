@@ -18,11 +18,9 @@ public class BeanFactory {
     }
 
     public void init() {
-        // ComponentScanner에 의존하고 있다... test mocking
         Set<Class<?>> scanSet = componentScanner.scan(packageName, Component.class);
 
         createBeanMap(scanSet);
-
     }
 
     private void createBeanMap(final Set<Class<?>> classSet) {
@@ -40,7 +38,8 @@ public class BeanFactory {
         Object[] parameters = getParametersThroughBeanMap(constructor);
 
         try {
-            beanMap.put(constructor.getName(), constructor.newInstance(parameters));
+            Object bean = constructor.newInstance(parameters);
+            beanMap.put(constructor.getName(), bean);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -92,9 +91,15 @@ public class BeanFactory {
 
     private Object[] getParametersThroughBeanMap(final Constructor<?> constructor) {
         return Arrays.stream(constructor.getParameterTypes())
-                .map(parameter -> beanMap.getOrDefault(parameter.getName(), parameter))
+                .map(this::getBeanOrCreate)
                 .toArray();
-        // Class일 수도 있다는 게 문제. 빈 생성을 또 해줘야 한다?
+    }
+
+    private Object getBeanOrCreate(Class<?> parameterType) {
+        if (isNotContainInBeanMap(parameterType)) {
+            createBean(parameterType);
+        }
+        return beanMap.get(parameterType.getName());
     }
 
     public <T> T getBean(final Class<T> clazz) {

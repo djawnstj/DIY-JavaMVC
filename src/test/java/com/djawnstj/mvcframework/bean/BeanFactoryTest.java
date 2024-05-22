@@ -4,6 +4,7 @@ import com.djawnstj.common.PayController;
 import com.djawnstj.common.UserRepository;
 import com.djawnstj.common.UserService;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.*;
@@ -29,6 +30,7 @@ public class BeanFactoryTest {
 
     @Test
     @DisplayName("@Autowired 어노테이션이 붙은 생성자의 파라미터 주입")
+    @RepeatedTest(value = 10)
     void parameterInjectionInAutoWiredConstructor() {
         // Given
         final BeanFactory beanFactory = new BeanFactory(basePackage);
