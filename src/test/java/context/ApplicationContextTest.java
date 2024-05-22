@@ -1,8 +1,6 @@
 package context;
 
-import com.djawnstj.mvcframework.code.UserController;
-import com.djawnstj.mvcframework.code.UserRepository;
-import com.djawnstj.mvcframework.code.UserService;
+import com.djawnstj.mvcframework.code.*;
 import com.djawnstj.mvcframework.context.ApplicationContext;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
@@ -97,6 +95,8 @@ class ApplicationContextTest {
 
         final UserService userService = applicationContext.getBean(UserService.class);
         final UserRepository userRepository = applicationContext.getBean(UserRepository.class);
+        final PayService payService = applicationContext.getBean(PayService.class);
+        final PayRepository payRepository = applicationContext.getBean(PayRepository.class);
 
         assertAll("singletonTest",
                 () -> Assertions.assertThat(userService).isNotNull(),

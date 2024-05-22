@@ -52,18 +52,8 @@ public class ApplicationContext {
                         if (method.isAnnotationPresent(Bean.class)) {
                             // 리턴 타입, 메소드
                             configurationMap.put(method.getReturnType(),method);
-//                            Class<?>[] parameterTypes = method.getParameterTypes();
-//                            Object bean;
-//                            if (parameterTypes.length > 0) {
-//                                Object[] parameters = createParameters(parameterTypes);
-//                                bean = method.invoke(instance, parameters);
-//                            } else {
-//                                bean = method.invoke(instance);
-//                            }
-//                            saveBean(method.getName(), bean);
                         }
                     }
-
                 } catch (InstantiationException | IllegalAccessException | InvocationTargetException |
                          NoSuchMethodException e) {
                     throw new RuntimeException(e);
@@ -110,9 +100,15 @@ public class ApplicationContext {
         for (int i = 0; i < parameters.length; i++) {
             Class<?> parameterType = parameterTypes[i];
 
+            logger.debug(String.valueOf(parameterType));
+
             // 클래스에 없거나, config에도 없거나 둘다 없을때
-            if (!(beanClasses.contains(parameterType)) ) {
+            if (!(beanClasses.contains(parameterType)) && !(configurationMap.containsKey(parameterType))) {
                 throw new RuntimeException("파라미터 타입이 없습니다 - " + parameterType.getSimpleName());
+            }
+
+            // 클래스에는 없지만, config에는 존재할 때,
+            if(!(beanClasses.contains(parameterType)) && configurationMap.containsKey(parameterType)){
             }
 
             if (!isBeanExist(parameterType)) {
