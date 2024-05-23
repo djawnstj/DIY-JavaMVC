@@ -1,8 +1,6 @@
 package com.djawnstj.mvcframework.bean;
 
-import com.djawnstj.common.PayController;
-import com.djawnstj.common.UserRepository;
-import com.djawnstj.common.UserService;
+import com.djawnstj.common.*;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
@@ -52,9 +50,9 @@ public class BeanFactoryTest {
         final BeanFactory beanFactory = new BeanFactory(basePackage);
         Class<UserService> userServiceClass = UserService.class;
         Class<PayController> payControllerClass = PayController.class;
-        beanFactory.init();
 
         // When
+        beanFactory.init();
         UserService userService = beanFactory.getBean(userServiceClass);
         PayController payController = beanFactory.getBean(payControllerClass);
 
@@ -74,6 +72,21 @@ public class BeanFactoryTest {
         assertThatThrownBy(beanFactory::init)
                 .isInstanceOf(RuntimeException.class)
                 .hasMessage("There are more than one AutoWired annotation.");
+    }
+
+    @Test
+    @DisplayName("@Bean으로 동적 빈 생성")
+    void createBeanWithBeanAnnotation() {
+        // Given
+        final BeanFactory beanFactory = new BeanFactory(basePackage);
+        Class<ProductService> productServiceClass = ProductService.class;
+        Class<ProductRepository> productRepositoryClass = ProductRepository.class;
+
+        // When
+        beanFactory.init();
+
+        // Then
+
     }
 
 }

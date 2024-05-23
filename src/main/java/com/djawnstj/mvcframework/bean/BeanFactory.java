@@ -1,9 +1,11 @@
 package com.djawnstj.mvcframework.bean;
 
 import com.djawnstj.mvcframework.annotation.AutoWired;
+import com.djawnstj.mvcframework.annotation.Bean;
 import com.djawnstj.mvcframework.annotation.Component;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -34,17 +36,23 @@ public class BeanFactory {
     }
 
     private void createBean(final Class<?> clazz) {
+
+        // 빈인지 컴포넌트인지 구분해서?
+        List<Method> beanMethods = Arrays.stream(clazz.getDeclaredMethods())
+                .filter(method -> method.isAnnotationPresent(Bean.class))
+                .collect(Collectors.toList());
+
         Constructor<?> constructor = getConstructor(clazz);
         Object[] parameters = getParametersThroughBeanMap(constructor);
 
         try {
             constructor.setAccessible(true);
             Object bean = constructor.newInstance(parameters);
-            constructor.setAccessible(false);
-
             beanMap.put(constructor.getName(), bean);
         } catch (Exception e) {
             throw new RuntimeException(e);
+        } finally {
+            constructor.setAccessible(false);
         }
     }
 

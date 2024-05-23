@@ -7,8 +7,8 @@ import com.djawnstj.mvcframework.annotation.Configuration;
 public class UserConfig {
 
     @Bean
-    public UserService userService(final UserRepository userRepository) {
-        return new UserService(userRepository);
+    public ProductService productService(final ProductRepository productRepository) {
+        return new ProductService(productRepository);
     }
 
 }
