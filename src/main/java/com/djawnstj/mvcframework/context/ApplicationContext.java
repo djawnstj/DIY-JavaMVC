@@ -5,8 +5,6 @@ import com.djawnstj.mvcframework.annotation.Bean;
 import com.djawnstj.mvcframework.annotation.Component;
 import com.djawnstj.mvcframework.annotation.Configuration;
 import com.djawnstj.mvcframework.bean.BeanFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.*;
 import java.util.*;
@@ -78,7 +76,8 @@ public class ApplicationContext {
         }
 
         if (configurationMap.containsKey(beanClass.getSimpleName())) {
-            createInstanceByConfiguration(beanClass);
+            Class<?> declaringClass = configurationMap.get(beanClass.getSimpleName()).getDeclaringClass();
+            createInstanceByConfiguration(beanClass,declaringClass);
         }
 
         Constructor<?> constructor = getConstructor(beanClass);
@@ -102,10 +101,9 @@ public class ApplicationContext {
         }
     }
 
-    private void createInstanceByConfiguration(Class<?> beanClass) {
+    private void createInstanceByConfiguration(Class<?> beanClass, Class<?> declaringClass) {
         Method method = configurationMap.get(beanClass.getSimpleName());
         try {
-            Class<?> declaringClass = method.getDeclaringClass();
             Class<?>[] parameterTypes = method.getParameterTypes();
 
             method.setAccessible(true);
