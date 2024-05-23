@@ -38,7 +38,10 @@ public class BeanFactory {
         Object[] parameters = getParametersThroughBeanMap(constructor);
 
         try {
+            constructor.setAccessible(true);
             Object bean = constructor.newInstance(parameters);
+            constructor.setAccessible(false);
+
             beanMap.put(constructor.getName(), bean);
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -95,7 +98,7 @@ public class BeanFactory {
                 .toArray();
     }
 
-    private Object getBeanOrCreate(Class<?> parameterType) {
+    private Object getBeanOrCreate(final Class<?> parameterType) {
         if (isNotContainInBeanMap(parameterType)) {
             createBean(parameterType);
         }

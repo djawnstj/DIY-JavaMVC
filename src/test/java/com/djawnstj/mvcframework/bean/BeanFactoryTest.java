@@ -28,9 +28,8 @@ public class BeanFactoryTest {
         assertThat(userService1).isSameAs(userService2);
     }
 
-    @Test
-    @DisplayName("@Autowired 어노테이션이 붙은 생성자의 파라미터 주입")
     @RepeatedTest(value = 10)
+    @DisplayName("@Autowired 어노테이션이 붙은 생성자의 파라미터 주입")
     void parameterInjectionInAutoWiredConstructor() {
         // Given
         final BeanFactory beanFactory = new BeanFactory(basePackage);
