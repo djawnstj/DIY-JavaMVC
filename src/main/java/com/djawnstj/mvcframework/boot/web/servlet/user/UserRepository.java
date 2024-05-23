@@ -1,6 +1,5 @@
 package com.djawnstj.mvcframework.boot.web.servlet.user;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;

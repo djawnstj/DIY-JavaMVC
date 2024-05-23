@@ -9,7 +9,7 @@ import java.io.IOException;
 class HomeServletTest {
 
     @Test
-    void HOME_SERVLET_RESPONSE() throws ServletException, IOException, ClassNotFoundException {
+    void HOME_SERVLET_RESPONSE() throws IOException, ClassNotFoundException {
         // given
         MvcApplicationMain.main(new String[0]);
     }

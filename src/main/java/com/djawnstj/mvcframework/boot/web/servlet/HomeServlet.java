@@ -1,8 +1,5 @@
 package com.djawnstj.mvcframework.boot.web.servlet;
 
-import com.djawnstj.mvcframework.boot.web.servlet.user.User;
-import com.djawnstj.mvcframework.boot.web.servlet.user.UserRepository;
-
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;

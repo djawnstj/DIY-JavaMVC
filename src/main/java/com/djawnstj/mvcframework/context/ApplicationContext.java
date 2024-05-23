@@ -5,6 +5,8 @@ import com.djawnstj.mvcframework.annotation.Bean;
 import com.djawnstj.mvcframework.annotation.Component;
 import com.djawnstj.mvcframework.annotation.Configuration;
 import com.djawnstj.mvcframework.bean.BeanFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.*;
 import java.util.*;
@@ -17,6 +19,8 @@ import java.util.*;
 // 5. 필요로 하는 매개변수의 타입을 beanClasses에서 찾아서 생성하고 주입한다.
 
 public class ApplicationContext {
+
+    private static final Logger logger = LoggerFactory.getLogger(ApplicationContext.class);
 
     private final BeanFactory factory;
     private final Set<Class<?>> beanClasses = new HashSet<>();
