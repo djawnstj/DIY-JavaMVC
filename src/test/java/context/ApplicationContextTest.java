@@ -101,6 +101,28 @@ class ApplicationContextTest {
         assertAll("singletonTest",
                 () -> Assertions.assertThat(userService).isNotNull(),
                 () -> Assertions.assertThat(userRepository).isNotNull(),
-                () -> Assertions.assertThat(userService.userRepository).isEqualTo(userRepository));
+                () -> Assertions.assertThat(payService).isNotNull(),
+                () -> Assertions.assertThat(payRepository).isNotNull(),
+                () -> Assertions.assertThat(userService.userRepository).isEqualTo(userRepository),
+                () -> Assertions.assertThat(payService.payRepository).isEqualTo(payRepository));
+    }
+
+    @Test
+    @DisplayName("빈 등록 테스트 - Configuration Bean 등록 2")
+    void configurationTest2() {
+        ApplicationContext applicationContext = new ApplicationContext("com.djawnstj.mvcframework");
+        applicationContext.init();
+
+        final PayService payService = applicationContext.getBean(PayService.class);
+        final PayRepository payRepository1 = applicationContext.getBean(PayRepository.class);
+        final PayRepository payRepository2 = applicationContext.getBean(PayRepository.class);
+
+        assertAll("singletonTest2",
+                () -> Assertions.assertThat(payRepository1).isNotNull(),
+                () -> Assertions.assertThat(payRepository2).isNotNull(),
+                () -> Assertions.assertThat(payService).isNotNull(),
+                () -> Assertions.assertThat(payRepository1).isEqualTo(payRepository2),
+                () -> Assertions.assertThat(payService.payRepository).isEqualTo(payRepository1),
+                () -> Assertions.assertThat(payService.payRepository).isEqualTo(payRepository2));
     }
 }

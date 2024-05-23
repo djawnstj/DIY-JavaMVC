@@ -1,8 +1,7 @@
-package com.djawnstj.mvcframework.config;
+package com.djawnstj.mvcframework.code;
 
 import com.djawnstj.mvcframework.annotation.Bean;
 import com.djawnstj.mvcframework.annotation.Configuration;
-import com.djawnstj.mvcframework.code.*;
 
 @Configuration
 public class UserConfig {
@@ -19,6 +18,6 @@ public class UserConfig {
 
     @Bean
     public PayService payService(final PayRepository payRepository) {
-        return new PayService();
+        return new PayService(payRepository);
     }
 }

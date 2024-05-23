@@ -20,45 +20,39 @@ import java.util.*;
 
 public class ApplicationContext {
 
-    private static final Logger logger = LoggerFactory.getLogger(ApplicationContext.class);
-
     private final BeanFactory factory;
     private final Set<Class<?>> beanClasses = new HashSet<>();
     public final Map<String, Object> beanMap = new HashMap<>();
-    public final Map<Class<?>, Object> configurationMap = new HashMap<>();
+    public final Map<String, Method> configurationMap = new HashMap<>();
 
     public ApplicationContext(final String packageName) {
         this.factory = new BeanFactory(packageName);
     }
 
     public void init() {
-        Set<Class<?>> annotationClasses = factory.scanAnnotationClasses(Component.class);
+        Set<Class<?>> componentClasses = factory.scanAnnotationClasses(Component.class);
 
-        beanClasses.addAll(annotationClasses);
+        beanClasses.addAll(componentClasses);
 
-        createBeansReferenceByConfiguration(annotationClasses);
+        createBeansReferenceByConfiguration(componentClasses);
 
         createBeans(beanClasses);
     }
 
     // configuration 을 참조하여 생성
-    private void createBeansReferenceByConfiguration(final Set<Class<?>> annotationClasses) {
-        for (Class<?> annotationClass : annotationClasses) {
-            if (annotationClass.isAnnotationPresent(Configuration.class)) {
-                try {
-                    Object instance = annotationClass.getDeclaredConstructor().newInstance();
-                    Method[] methods = annotationClass.getDeclaredMethods();
+    private void createBeansReferenceByConfiguration(final Set<Class<?>> configClasses) {
+        for (Class<?> configClass : configClasses) {
+            if (configClass.isAnnotationPresent(Configuration.class)) {
+                addConfiguration(configClass.getDeclaredMethods());
+            }
+        }
+    }
 
-                    for (Method method : methods) {
-                        if (method.isAnnotationPresent(Bean.class)) {
-                            // 리턴 타입, 메소드
-                            configurationMap.put(method.getReturnType(),method);
-                        }
-                    }
-                } catch (InstantiationException | IllegalAccessException | InvocationTargetException |
-                         NoSuchMethodException e) {
-                    throw new RuntimeException(e);
-                }
+    private void addConfiguration(Method[] methods) {
+        for (Method method : methods) {
+            if (method.isAnnotationPresent(Bean.class)) {
+                beanClasses.add(method.getReturnType());
+                configurationMap.put(method.getReturnType().getSimpleName(), method);
             }
         }
     }
@@ -73,13 +67,26 @@ public class ApplicationContext {
         }
     }
 
+    // 실제 빈 인스턴스가 존재하는지 확인
     private boolean isBeanExist(Class<?> beanClass) {
         return beanMap.containsKey(beanClass.getSimpleName());
     }
 
     private void createInstance(final Class<?> beanClass) {
+        if (isBeanExist(beanClass)) {
+            return;
+        }
+
+        if (configurationMap.containsKey(beanClass.getSimpleName())) {
+            createInstanceByConfiguration(beanClass);
+        }
+
         Constructor<?> constructor = getConstructor(beanClass);
 
+        createInstanceByConstructor(beanClass, constructor);
+    }
+
+    private void createInstanceByConstructor(Class<?> beanClass, Constructor<?> constructor) {
         try {
             Object[] parameters = createParameters(constructor.getParameterTypes());
 
@@ -95,23 +102,40 @@ public class ApplicationContext {
         }
     }
 
+    private void createInstanceByConfiguration(Class<?> beanClass) {
+        Method method = configurationMap.get(beanClass.getSimpleName());
+        try {
+            Class<?> declaringClass = method.getDeclaringClass();
+            Class<?>[] parameterTypes = method.getParameterTypes();
+
+            method.setAccessible(true);
+
+            Object[] parameters = createParameters(parameterTypes);
+
+            Object configInstance = getConstructor(declaringClass).newInstance();
+
+            Object bean = method.invoke(configInstance, parameters);
+
+            saveBean(beanClass.getSimpleName(), bean);
+        } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
+            throw new RuntimeException(e);
+        } finally {
+            method.setAccessible(false);
+        }
+    }
+
     private Object[] createParameters(Class<?>[] parameterTypes) {
         Object[] parameters = new Object[parameterTypes.length];
 
         for (int i = 0; i < parameters.length; i++) {
             Class<?> parameterType = parameterTypes[i];
 
-            logger.debug(String.valueOf(parameterType));
-
-            // 클래스에 없거나, config에도 없거나 둘다 없을때
-            if (!(beanClasses.contains(parameterType)) && !(configurationMap.containsKey(parameterType))) {
+            // Set에 없는경우
+            if (!(beanClasses.contains(parameterType))) {
                 throw new RuntimeException("파라미터 타입이 없습니다 - " + parameterType.getSimpleName());
             }
 
-            // 클래스에는 없지만, config에는 존재할 때,
-            if(!(beanClasses.contains(parameterType)) && configurationMap.containsKey(parameterType)){
-            }
-
+            // Set은 위에서 검증 완료, 존재하지만 Instance로 존재하지 않는 경우
             if (!isBeanExist(parameterType)) {
                 createInstance(parameterType);
             }
