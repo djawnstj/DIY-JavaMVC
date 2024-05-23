@@ -1,4 +1,4 @@
-package study.bean;
+package bean;
 
 import com.djawnstj.mvcframework.annotation.Component;
 import com.djawnstj.mvcframework.bean.BeanFactory;
@@ -7,7 +7,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import study.reflection.ReflectionTest;
+import reflection.ReflectionTest;
 
 import java.util.Set;
 

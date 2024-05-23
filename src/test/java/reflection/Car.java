@@ -1,6 +1,4 @@
-package study.reflection;
-
-import study.reflection.PrintView;
+package reflection;
 
 public class Car {
 

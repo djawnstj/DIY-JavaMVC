@@ -1,4 +1,4 @@
-package study.reflection;
+package reflection;
 
 import org.reflections.Reflections;
 

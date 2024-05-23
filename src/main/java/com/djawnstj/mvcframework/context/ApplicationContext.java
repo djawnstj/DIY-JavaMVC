@@ -1,76 +1,180 @@
 package com.djawnstj.mvcframework.context;
 
 import com.djawnstj.mvcframework.annotation.Autowired;
+import com.djawnstj.mvcframework.annotation.Bean;
 import com.djawnstj.mvcframework.annotation.Component;
+import com.djawnstj.mvcframework.annotation.Configuration;
 import com.djawnstj.mvcframework.bean.BeanFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.*;
 import java.util.*;
+
+// 빈을 생성하는 과정
+// 1. 모든 어노테이션을 가져온다. - 컴포넌트 어노테이션이 최상위 이기 때문에 컴포넌트 어노테이션만 가져오면 됨.
+// 2. 어노테이션을 통해 가져온 클래스들의 모음을 beanClasses 라고 하고 set으로 저장한다.
+// 3. 반복문을 돌면서 autowired 어노테이션들을 찾아준다. 생성자 필드 메서드
+// 4. 찾은 생성자, 필드, 메서드가 필요로 하는 매개변수 생성하고 넣어준다
+// 5. 필요로 하는 매개변수의 타입을 beanClasses에서 찾아서 생성하고 주입한다.
 
 public class ApplicationContext {
 
-    private static final Logger logger = LoggerFactory.getLogger(ApplicationContext.class);
-
-    // 피드백 내용중에 main에 프로덕션 코드로 존재해야된다는 피드백 받음
-    // 테스트 코드에서 생성하는게 아니라, 실행시에 자동으로 넣어 줘야됨
-    // ApplicationContext - 빈을 생성하고 관리하는 객체
-    // 테스트 코드 실행시 - new ApplicationContext(basePackage); 이런식으로 했을때 자동으로 빈을 생성하는 객체를 구현
-
-    // 구현 기능
-    // 생성시에 빈에 등록된 클래스들을 모음 - 리스트, 정적인 클래스
-    // 이후 클래스들을 모은 리스트내부를 모두 동적으로 객체 생성
-
-    // 빈 팩토리 객체
     private final BeanFactory factory;
-    // 빈에 등록될 클래스들을 모아놓은 리스트
     private final Set<Class<?>> beanClasses = new HashSet<>();
-    private Map<Class<?>, Object> beans = new HashMap<>();
+    public final Map<String, Object> beanMap = new HashMap<>();
+    public final Map<String, Method> configurationMap = new HashMap<>();
 
-    // 생성자로 패키지의 모든 클래스중 어노테이션이 되어있는 클래스만 가져옴.
     public ApplicationContext(final String packageName) {
         this.factory = new BeanFactory(packageName);
     }
 
     public void init() {
-        // init시에 빈 팩토리 객체에 내부에 있는 어노테이션된 클래스들을 모두 찾아 가져오는 메서드 실행
-        Set<Class<?>> annotationClasses = factory.scanAnnotationClasses(Component.class);
-        findAutowiredAnnotations(annotationClasses);
-        // 위에 찾은 클래스들을 beanClasses에 저장
-        beanClasses.addAll(annotationClasses);
-        // 빈을 동적으로 생성하는 메서드 실행
+        Set<Class<?>> componentClasses = factory.scanAnnotationClasses(Component.class);
+
+        beanClasses.addAll(componentClasses);
+
+        createBeansReferenceByConfiguration(componentClasses);
+
         createBeans(beanClasses);
     }
 
-    private void createBeans(Set<Class<?>> classes) {
-        // 컴포넌트 어노테이션이 적용된 모든 클래스를 저장한 Set
-        for (Class<?> beanClass : classes) {
-            if (!beans.containsKey(beanClass)) {
-                try {
-                    Object instance = beanClass.getDeclaredConstructor().newInstance();
-                    // {클래스 : 인스턴스} 로 hashmap에 저장
-                    beans.put(beanClass, instance);
-                } catch (InstantiationException | IllegalAccessException | InvocationTargetException |
-                         NoSuchMethodException e) {
-                    throw new RuntimeException(e);
-                }
+    // configuration 을 참조하여 생성
+    private void createBeansReferenceByConfiguration(final Set<Class<?>> configClasses) {
+        for (Class<?> configClass : configClasses) {
+            if (configClass.isAnnotationPresent(Configuration.class)) {
+                addConfiguration(configClass.getDeclaredMethods());
             }
         }
     }
 
-    // @Autowired 어노테이션을 모두 찾는다.
-    // 클래스의 모든 정보를 가져온다.
-    public void findAutowiredAnnotations(Set<Class<?>> annotationClasses) {
-        for (Class<?> annotationClass : annotationClasses) {
-            Field[] declaredFields = annotationClass.getDeclaredFields();
-            Constructor<?>[] declaredConstructors = annotationClass.getDeclaredConstructors();
+    private void addConfiguration(Method[] methods) {
+        for (Method method : methods) {
+            if (method.isAnnotationPresent(Bean.class)) {
+                beanClasses.add(method.getReturnType());
+                configurationMap.put(method.getReturnType().getSimpleName(), method);
+            }
         }
     }
 
+    private void createBeans(final Set<Class<?>> beanClasses) {
+        for (Class<?> beanClass : beanClasses) {
+            if (isBeanExist(beanClass)) {
+                continue;
+            }
+
+            createInstance(beanClass);
+        }
+    }
+
+    // 실제 빈 인스턴스가 존재하는지 확인
+    private boolean isBeanExist(Class<?> beanClass) {
+        return beanMap.containsKey(beanClass.getSimpleName());
+    }
+
+    private void createInstance(final Class<?> beanClass) {
+        if (isBeanExist(beanClass)) {
+            return;
+        }
+
+        if (configurationMap.containsKey(beanClass.getSimpleName())) {
+            Class<?> declaringClass = configurationMap.get(beanClass.getSimpleName()).getDeclaringClass();
+            createInstanceByConfiguration(beanClass,declaringClass);
+        }
+
+        Constructor<?> constructor = getConstructor(beanClass);
+
+        createInstanceByConstructor(beanClass, constructor);
+    }
+
+    private void createInstanceByConstructor(Class<?> beanClass, Constructor<?> constructor) {
+        try {
+            Object[] parameters = createParameters(constructor.getParameterTypes());
+
+            constructor.setAccessible(true);
+
+            Object instance = constructor.newInstance(parameters);
+
+            saveBean(beanClass.getSimpleName(), instance);
+        } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
+            throw new RuntimeException(e);
+        } finally {
+            constructor.setAccessible(false);
+        }
+    }
+
+    private void createInstanceByConfiguration(Class<?> beanClass, Class<?> declaringClass) {
+        Method method = configurationMap.get(beanClass.getSimpleName());
+        try {
+            Class<?>[] parameterTypes = method.getParameterTypes();
+
+            method.setAccessible(true);
+
+            Object[] parameters = createParameters(parameterTypes);
+
+            Object configInstance = getConstructor(declaringClass).newInstance();
+
+            Object bean = method.invoke(configInstance, parameters);
+
+            saveBean(beanClass.getSimpleName(), bean);
+        } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
+            throw new RuntimeException(e);
+        } finally {
+            method.setAccessible(false);
+        }
+    }
+
+    private Object[] createParameters(Class<?>[] parameterTypes) {
+        Object[] parameters = new Object[parameterTypes.length];
+
+        for (int i = 0; i < parameters.length; i++) {
+            Class<?> parameterType = parameterTypes[i];
+
+            // Set에 없는경우
+            if (!(beanClasses.contains(parameterType))) {
+                throw new RuntimeException("파라미터 타입이 없습니다 - " + parameterType.getSimpleName());
+            }
+
+            // Set은 위에서 검증 완료, 존재하지만 Instance로 존재하지 않는 경우
+            if (!isBeanExist(parameterType)) {
+                createInstance(parameterType);
+            }
+
+            parameters[i] = beanMap.get(parameterType.getSimpleName());
+        }
+
+        return parameters;
+    }
+
+    private Constructor<?> getConstructor(final Class<?> beanClass) {
+        Constructor<?>[] declaredConstructors = beanClass.getDeclaredConstructors();
+
+        if (declaredConstructors.length == 1) {
+            return declaredConstructors[0];
+        }
+
+        return getAutowiredConstructor(declaredConstructors);
+    }
+
+    private Constructor<?> getAutowiredConstructor(final Constructor<?>[] constructors) {
+        List<Constructor<?>> autowiredConstructors = new ArrayList<>();
+
+        for (Constructor<?> constructor : constructors) {
+            if (constructor.isAnnotationPresent(Autowired.class)) {
+                autowiredConstructors.add(constructor);
+            }
+        }
+
+        if (autowiredConstructors.size() != 1) {
+            throw new RuntimeException("autowired 생성자가 1개가 아닙니다.");
+        }
+
+        return autowiredConstructors.get(0);
+    }
+
+    private void saveBean(String beanName, Object instance) {
+        beanMap.put(beanName, instance);
+    }
+
     public <T> T getBean(Class<T> clazz) {
-        return clazz.cast(beans.get(clazz));
+        return clazz.cast(beanMap.get(clazz.getSimpleName()));
     }
 }
