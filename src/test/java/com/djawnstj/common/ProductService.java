@@ -3,7 +3,6 @@ package com.djawnstj.common;
 import com.djawnstj.mvcframework.annotation.AutoWired;
 import com.djawnstj.mvcframework.annotation.Service;
 
-@Service
 public class ProductService {
     private final ProductRepository productRepository;
 

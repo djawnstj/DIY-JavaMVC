@@ -84,8 +84,12 @@ public class BeanFactoryTest {
 
         // When
         beanFactory.init();
+        ProductService productService = beanFactory.getBean(productServiceClass);
+        ProductRepository productRepository = beanFactory.getBean(productRepositoryClass);
 
         // Then
+        assertThat(productService).isNotNull();
+        assertThat(productRepository).isNotNull();
 
     }
 

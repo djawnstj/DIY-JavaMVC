@@ -3,6 +3,7 @@ package com.djawnstj.mvcframework.bean;
 import com.djawnstj.mvcframework.annotation.AutoWired;
 import com.djawnstj.mvcframework.annotation.Bean;
 import com.djawnstj.mvcframework.annotation.Component;
+import com.djawnstj.mvcframework.annotation.Configuration;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
@@ -20,28 +21,31 @@ public class BeanFactory {
     }
 
     public void init() {
-        Set<Class<?>> scanSet = componentScanner.scan(packageName, Component.class);
+        Set<Class<?>> componentSet = componentScanner.scan(packageName, Component.class);
+        Set<Class<?>> configurationSet = componentScanner.scan(packageName, Configuration.class);
 
-        createBeanMap(scanSet);
+        createComponentBeanMap(componentSet);
+        createConfigurationBeanMap(configurationSet);
+
     }
 
-    private void createBeanMap(final Set<Class<?>> classSet) {
+    private void createComponentBeanMap(final Set<Class<?>> classSet) {
         classSet.stream()
                 .filter(this::isNotContainInBeanMap)
-                .forEach(this::createBean);
+                .forEach(this::createComponentBean);
+    }
+
+    private void createConfigurationBeanMap(final Set<Class<?>> classSet) {
+        classSet.stream()
+                .filter(this::isNotContainInBeanMap)
+                .forEach(this::createConfigurationBean);
     }
 
     private boolean isNotContainInBeanMap(final Class<?> clazz) {
         return !beanMap.containsKey(clazz.getName());
     }
 
-    private void createBean(final Class<?> clazz) {
-
-        // 빈인지 컴포넌트인지 구분해서?
-        List<Method> beanMethods = Arrays.stream(clazz.getDeclaredMethods())
-                .filter(method -> method.isAnnotationPresent(Bean.class))
-                .collect(Collectors.toList());
-
+    private void createComponentBean(final Class<?> clazz) {
         Constructor<?> constructor = getConstructor(clazz);
         Object[] parameters = getParametersThroughBeanMap(constructor);
 
@@ -106,11 +110,41 @@ public class BeanFactory {
                 .toArray();
     }
 
+    private Object[] getParametersThroughBeanMap(final Method method) {
+        return Arrays.stream(method.getParameterTypes())
+                .map(this::getBeanOrCreate)
+                .toArray();
+    }
+
     private Object getBeanOrCreate(final Class<?> parameterType) {
         if (isNotContainInBeanMap(parameterType)) {
-            createBean(parameterType);
+            createComponentBean(parameterType);
         }
         return beanMap.get(parameterType.getName());
+    }
+
+    private void createConfigurationBean(final Class<?> clazz) {
+        List<Method> beanMethods = findBeanMethods(clazz);
+
+        for (Method beanMethod : beanMethods) {
+            Object[] parameters = getParametersThroughBeanMap(beanMethod);
+
+            try {
+                beanMethod.setAccessible(true);
+                Object bean = beanMethod.invoke(clazz.getDeclaredConstructor().newInstance(), parameters);
+                beanMap.put(bean.getClass().getName(), bean);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            } finally {
+                beanMethod.setAccessible(false);
+            }
+        }
+    }
+
+    private List<Method> findBeanMethods(final Class<?> clazz) {
+        return Arrays.stream(clazz.getDeclaredMethods())
+                .filter(method -> method.isAnnotationPresent(Bean.class))
+                .collect(Collectors.toList());
     }
 
     public <T> T getBean(final Class<T> clazz) {
