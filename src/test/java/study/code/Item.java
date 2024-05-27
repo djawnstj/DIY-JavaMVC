@@ -1,4 +1,4 @@
-package code;
+package study.code;
 
 public class Item {
 

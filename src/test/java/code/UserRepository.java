@@ -1,17 +1,18 @@
 package code;
 
-import java.util.HashMap;
-import java.util.Map;
+import com.djawnstj.mvcframework.annotation.Repository;
 
+import java.util.Collections;
+import java.util.List;
+
+@Repository
 public class UserRepository {
 
-    private static Map<Long, User> users = new HashMap<>();
+    public void save(String id, User user) {
 
-    public void save(User user) {
-        users.put(user.getId(), user);
     }
 
-    public User findById(long userId) {
-        return users.get(userId);
+    public List<User> findAll() {
+        return Collections.emptyList();
     }
 }

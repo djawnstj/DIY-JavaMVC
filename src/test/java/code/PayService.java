@@ -1,16 +1,9 @@
 package code;
 
 public class PayService {
+    public PayRepository payRepository;
 
-    private final UserRepository userRepository;
-
-    public PayService(UserRepository userRepository) {
-        this.userRepository = userRepository;
-    }
-
-    public void charge(long userId, long money) {
-        User user = userRepository.findById(userId);
-
-        user.getPay().add(money);
+    public PayService(PayRepository payRepository) {
+        this.payRepository = payRepository;
     }
 }

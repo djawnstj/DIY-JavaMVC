@@ -1,4 +1,4 @@
-package com.djawnstj.mvcframework.code;
+package code;
 
 import com.djawnstj.mvcframework.annotation.Bean;
 import com.djawnstj.mvcframework.annotation.Configuration;

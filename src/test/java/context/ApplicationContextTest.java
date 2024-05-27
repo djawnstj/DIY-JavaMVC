@@ -1,6 +1,6 @@
 package context;
 
-import com.djawnstj.mvcframework.code.*;
+import code.*;
 import com.djawnstj.mvcframework.context.ApplicationContext;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
@@ -18,7 +18,7 @@ class ApplicationContextTest {
     @Test
     @DisplayName("init 테스트")
     void testInit() {
-        ApplicationContext applicationContext = new ApplicationContext("com.djawnstj.mvcframework");
+        ApplicationContext applicationContext = new ApplicationContext("code");
         applicationContext.init();
 
         UserService bean = applicationContext.getBean(UserService.class);
@@ -29,7 +29,7 @@ class ApplicationContextTest {
     @Test
     @DisplayName("어노테이션 조회 테스트")
     void annotationTest() {
-        ApplicationContext applicationContext = new ApplicationContext("com.djawnstj.mvcframework");
+        ApplicationContext applicationContext = new ApplicationContext("code");
         applicationContext.init();
 
         Object bean1 = applicationContext.getBean(UserService.class);
@@ -43,7 +43,7 @@ class ApplicationContextTest {
     @Test
     @DisplayName("빈 등록 및 조회 테스트 - 모든 객체는 싱글톤 패턴으로 구현")
     void addBeanSingletonTest() {
-        ApplicationContext applicationContext = new ApplicationContext("com.djawnstj.mvcframework");
+        ApplicationContext applicationContext = new ApplicationContext("code");
         applicationContext.init();
 
         Object bean1 = applicationContext.getBean(UserService.class);
@@ -58,7 +58,7 @@ class ApplicationContextTest {
     @Test
     @DisplayName("빈 등록 테스트 - 싱글톤 테스트 - 1")
     void singletonTest() {
-        ApplicationContext applicationContext = new ApplicationContext("com.djawnstj.mvcframework");
+        ApplicationContext applicationContext = new ApplicationContext("code");
         applicationContext.init();
 
         final UserRepository userRepository = applicationContext.getBean(UserRepository.class);
@@ -73,7 +73,7 @@ class ApplicationContextTest {
     @Test
     @DisplayName("빈 등록 테스트 - 싱글톤 테스트 - 2")
     void singletonTest2() {
-        ApplicationContext applicationContext = new ApplicationContext("com.djawnstj.mvcframework");
+        ApplicationContext applicationContext = new ApplicationContext("code");
         applicationContext.init();
 
         final UserController userController = applicationContext.getBean(UserController.class);
@@ -90,7 +90,7 @@ class ApplicationContextTest {
     @Test
     @DisplayName("빈 등록 테스트 - Configuration Bean 등록")
     void configurationTest() {
-        ApplicationContext applicationContext = new ApplicationContext("com.djawnstj.mvcframework");
+        ApplicationContext applicationContext = new ApplicationContext("code");
         applicationContext.init();
 
         final UserService userService = applicationContext.getBean(UserService.class);
@@ -110,7 +110,7 @@ class ApplicationContextTest {
     @Test
     @DisplayName("빈 등록 테스트 - Configuration Bean 등록 2")
     void configurationTest2() {
-        ApplicationContext applicationContext = new ApplicationContext("com.djawnstj.mvcframework");
+        ApplicationContext applicationContext = new ApplicationContext("code");
         applicationContext.init();
 
         final PayService payService = applicationContext.getBean(PayService.class);

@@ -1,20 +1,11 @@
 package code;
 
 public class User {
+    private final String id;
+    private final String pw;
 
-    private final long id;
-    private final Pay pay;
-
-    public User(long id, Pay pay) {
+    public User(String id, String pw) {
         this.id = id;
-        this.pay = pay;
-    }
-
-    public long getId() {
-        return id;
-    }
-
-    public Pay getPay() {
-        return pay;
+        this.pw = pw;
     }
 }

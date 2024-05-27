@@ -10,7 +10,7 @@ public class BeanFactory {
     private final Reflections reflections;
 
     public BeanFactory(final String basePackage) {
-        reflections = new Reflections(basePackage);
+        reflections = new Reflections("com.djawnstj.mvcframework", basePackage);
     }
 
     public Set<Class<?>> scanAnnotationClasses(Class<? extends Annotation> annotation) {
