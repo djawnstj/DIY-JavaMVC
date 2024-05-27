@@ -38,8 +38,6 @@ public class ApplicationContext {
 
         createBeansReferenceByConfiguration(componentClasses);
 
-        System.out.println(beanClasses);
-
         createBeans(beanClasses);
     }
 

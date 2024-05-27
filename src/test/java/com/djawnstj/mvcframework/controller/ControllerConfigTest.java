@@ -1,10 +1,17 @@
 package com.djawnstj.mvcframework.controller;
 
+import com.djawnstj.mvcframework.MvcApplicationMain;
 import com.djawnstj.mvcframework.context.ApplicationContext;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 
 class ControllerConfigTest {
 
@@ -12,8 +19,20 @@ class ControllerConfigTest {
 
     @Test
     @DisplayName("Controller Config Test")
-    void controllerConfigTest() {
-        ApplicationContext applicationContext = new ApplicationContext("com.djawnstj.mvcframework");
+    void controllerConfigTest() throws IOException, ClassNotFoundException, InterruptedException {
+        MvcApplicationMain.main(new String[0]);
+
+        ApplicationContext applicationContext = new ApplicationContext("code");
         applicationContext.init();
+
+        String url = "http://localhost:8080/home";
+
+        HttpClient client = HttpClient.newHttpClient();
+        HttpRequest request = HttpRequest.newBuilder().uri(URI.create(url)).build();
+
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+        // Log the response
+        logger.info("Response: " + response.body());
     }
 }
