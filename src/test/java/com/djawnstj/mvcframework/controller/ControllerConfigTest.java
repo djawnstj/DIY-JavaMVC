@@ -8,10 +8,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.Map;
 
 class ControllerConfigTest {
 
@@ -25,14 +27,11 @@ class ControllerConfigTest {
         ApplicationContext applicationContext = new ApplicationContext("code");
         applicationContext.init();
 
-        String url = "http://localhost:8080/home";
+        String uri = "/home";
 
-        HttpClient client = HttpClient.newHttpClient();
-        HttpRequest request = HttpRequest.newBuilder().uri(URI.create(url)).build();
-
-        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-
-        // Log the response
-        logger.info("Response: " + response.body());
+        Map<String, Method> configurationMap = applicationContext.configurationMap;
+        for (Method value : configurationMap.values()) {
+            logger.debug(String.valueOf(value));
+        }
     }
 }

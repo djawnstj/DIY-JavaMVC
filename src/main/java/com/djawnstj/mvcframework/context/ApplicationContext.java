@@ -5,6 +5,7 @@ import com.djawnstj.mvcframework.annotation.Bean;
 import com.djawnstj.mvcframework.annotation.Component;
 import com.djawnstj.mvcframework.annotation.Configuration;
 import com.djawnstj.mvcframework.bean.BeanFactory;
+import com.djawnstj.mvcframework.boot.web.servlet.HomeController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,9 +22,10 @@ import java.util.*;
 public class ApplicationContext {
 
     private static final Logger logger = LoggerFactory.getLogger(ApplicationContext.class);
+    public static final String DEFAULT_BEAN_NAME = "";
 
     private final BeanFactory factory;
-    private final Set<Class<?>> beanClasses = new HashSet<>();
+    public final Set<Class<?>> beanClasses = new HashSet<>();
     public final Map<String, Object> beanMap = new HashMap<>();
     public final Map<String, Method> configurationMap = new HashMap<>();
 
@@ -39,6 +41,10 @@ public class ApplicationContext {
         createBeansReferenceByConfiguration(componentClasses);
 
         createBeans(beanClasses);
+
+        for (String s : beanMap.keySet()) {
+            logger.debug(s);
+        }
     }
 
     // configuration 을 참조하여 생성
@@ -53,10 +59,24 @@ public class ApplicationContext {
     private void addConfiguration(Method[] methods) {
         for (Method method : methods) {
             if (method.isAnnotationPresent(Bean.class)) {
+
+                String beanName = method.getAnnotation(Bean.class).name();
+
                 beanClasses.add(method.getReturnType());
-                configurationMap.put(method.getReturnType().getSimpleName(), method);
+
+                saveConfigurationMap(method, beanName);
             }
         }
+    }
+
+    private void saveConfigurationMap(Method method, String beanName) {
+        if (!(beanName.equals(DEFAULT_BEAN_NAME))) {
+            configurationMap.put(beanName, method);
+            return;
+        }
+
+        configurationMap.put(method.getReturnType().getSimpleName(), method);
+
     }
 
     private void createBeans(final Set<Class<?>> beanClasses) {
@@ -81,7 +101,7 @@ public class ApplicationContext {
 
         if (configurationMap.containsKey(beanClass.getSimpleName())) {
             Class<?> declaringClass = configurationMap.get(beanClass.getSimpleName()).getDeclaringClass();
-            createInstanceByConfiguration(beanClass,declaringClass);
+            createInstanceByConfiguration(beanClass, declaringClass);
         }
 
         Constructor<?> constructor = getConstructor(beanClass);
