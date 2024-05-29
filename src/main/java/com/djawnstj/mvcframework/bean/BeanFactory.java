@@ -52,7 +52,7 @@ public class BeanFactory {
     }
 
     private void createBeanFromMethod(final Class<?> clazz, final Method method) {
-        Object[] parameters = getParametersThroughBeanMap(method);
+        Object[] parameters = getParametersThroughBeanMap(method.getParameterTypes());
 
         try {
             method.setAccessible(true);
@@ -71,7 +71,7 @@ public class BeanFactory {
         }
 
         Constructor<?> constructor = getConstructor(clazz);
-        Object[] parameters = getParametersThroughBeanMap(constructor);
+        Object[] parameters = getParametersThroughBeanMap(constructor.getParameterTypes());
 
         try {
             constructor.setAccessible(true);
@@ -132,14 +132,8 @@ public class BeanFactory {
         }
     }
 
-    private Object[] getParametersThroughBeanMap(final Constructor<?> constructor) {
-        return Arrays.stream(constructor.getParameterTypes())
-                .map(this::getBeanOrCreate)
-                .toArray();
-    }
-
-    private Object[] getParametersThroughBeanMap(final Method method) {
-        return Arrays.stream(method.getParameterTypes())
+    private Object[] getParametersThroughBeanMap(final Class<?>[] parameterTypes) {
+        return Arrays.stream(parameterTypes)
                 .map(this::getBeanOrCreate)
                 .toArray();
     }
