@@ -14,38 +14,62 @@ public class BeanFactory {
 
     private final String packageName;
     private final ComponentScanner componentScanner = new ComponentScanner();
-    private final HashMap<String, Object> beanMap = new HashMap<>();
+    private final Map<String, Object> beanMap = new HashMap<>();
 
     public BeanFactory(final String packageName) {
         this.packageName = packageName;
     }
 
     public void init() {
-        Set<Class<?>> componentSet = componentScanner.scan(packageName, Component.class);
-        Set<Class<?>> configurationSet = componentScanner.scan(packageName, Configuration.class);
+        Set<Class<?>> components = componentScanner.scan(packageName, Component.class);
 
-        createComponentBeanMap(componentSet);
-        createConfigurationBeanMap(configurationSet);
-
+        createBeanMap(components);
     }
 
-    private void createComponentBeanMap(final Set<Class<?>> classSet) {
-        classSet.stream()
-                .filter(this::isNotContainInBeanMap)
-                .forEach(this::createComponentBean);
+    private void createBeanMap(final Set<Class<?>> classes) {
+        for (Class<?> clazz : classes) {
+            if (isConfigurationClass(clazz)) {
+                createConfigurationBean(clazz);
+            }
+            createBean(clazz);
+        }
     }
 
-    private void createConfigurationBeanMap(final Set<Class<?>> classSet) {
-        classSet.stream()
-                .filter(this::isNotContainInBeanMap)
-                .forEach(this::createConfigurationBean);
+    private boolean isConfigurationClass(final Class<?> clazz) {
+        return clazz.isAnnotationPresent(Configuration.class);
     }
 
-    private boolean isNotContainInBeanMap(final Class<?> clazz) {
-        return !beanMap.containsKey(clazz.getName());
+    private void createConfigurationBean(final Class<?> clazz) {
+        for (Method method : clazz.getDeclaredMethods()) {
+            if (isBeanMethod(method)) {
+                createBeanFromMethod(clazz, method);
+            }
+        }
     }
 
-    private void createComponentBean(final Class<?> clazz) {
+    private boolean isBeanMethod(final Method method) {
+        return method.isAnnotationPresent(Bean.class);
+    }
+
+    private void createBeanFromMethod(final Class<?> clazz, final Method method) {
+        Object[] parameters = getParametersThroughBeanMap(method);
+
+        try {
+            method.setAccessible(true);
+            Object bean = method.invoke(getBeanOrCreate(clazz), parameters);
+            beanMap.put(bean.getClass().getName(), bean);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        } finally {
+            method.setAccessible(false);
+        }
+    }
+
+    private void createBean(final Class<?> clazz) {
+        if (isContainInBeanMap(clazz)) {
+            return;
+        }
+
         Constructor<?> constructor = getConstructor(clazz);
         Object[] parameters = getParametersThroughBeanMap(constructor);
 
@@ -58,6 +82,10 @@ public class BeanFactory {
         } finally {
             constructor.setAccessible(false);
         }
+    }
+
+    private boolean isContainInBeanMap(final Class<?> clazz) {
+        return beanMap.containsKey(clazz.getName());
     }
 
     private Constructor<?> getConstructor(final Class<?> clazz) {
@@ -117,34 +145,10 @@ public class BeanFactory {
     }
 
     private Object getBeanOrCreate(final Class<?> parameterType) {
-        if (isNotContainInBeanMap(parameterType)) {
-            createComponentBean(parameterType);
+        if (!isContainInBeanMap(parameterType)) {
+            createBean(parameterType);
         }
         return beanMap.get(parameterType.getName());
-    }
-
-    private void createConfigurationBean(final Class<?> clazz) {
-        List<Method> beanMethods = findBeanMethods(clazz);
-
-        for (Method beanMethod : beanMethods) {
-            Object[] parameters = getParametersThroughBeanMap(beanMethod);
-
-            try {
-                beanMethod.setAccessible(true);
-                Object bean = beanMethod.invoke(clazz.getDeclaredConstructor().newInstance(), parameters);
-                beanMap.put(bean.getClass().getName(), bean);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            } finally {
-                beanMethod.setAccessible(false);
-            }
-        }
-    }
-
-    private List<Method> findBeanMethods(final Class<?> clazz) {
-        return Arrays.stream(clazz.getDeclaredMethods())
-                .filter(method -> method.isAnnotationPresent(Bean.class))
-                .collect(Collectors.toList());
     }
 
     public <T> T getBean(final Class<T> clazz) {
