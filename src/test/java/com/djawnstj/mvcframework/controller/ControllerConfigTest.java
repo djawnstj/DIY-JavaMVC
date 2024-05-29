@@ -13,6 +13,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.List;
 import java.util.Map;
 
 class ControllerConfigTest {
@@ -29,9 +30,7 @@ class ControllerConfigTest {
 
         String uri = "/home";
 
-        Map<String, Method> configurationMap = applicationContext.configurationMap;
-        for (Method value : configurationMap.values()) {
-            logger.debug(String.valueOf(value));
-        }
+        List<String> controllerBeanNames = applicationContext.controllerBeanNames;
+        logger.debug(String.valueOf(controllerBeanNames));
     }
 }

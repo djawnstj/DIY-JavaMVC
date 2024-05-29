@@ -28,6 +28,7 @@ public class ApplicationContext {
     public final Set<Class<?>> beanClasses = new HashSet<>();
     public final Map<String, Object> beanMap = new HashMap<>();
     public final Map<String, Method> configurationMap = new HashMap<>();
+    public final List<String> controllerBeanNames = new ArrayList<>();
 
     public ApplicationContext(final String packageName) {
         this.factory = new BeanFactory(packageName);
@@ -41,10 +42,6 @@ public class ApplicationContext {
         createBeansReferenceByConfiguration(componentClasses);
 
         createBeans(beanClasses);
-
-        for (String s : beanMap.keySet()) {
-            logger.debug(s);
-        }
     }
 
     // configuration 을 참조하여 생성
@@ -72,11 +69,11 @@ public class ApplicationContext {
     private void saveConfigurationMap(Method method, String beanName) {
         if (!(beanName.equals(DEFAULT_BEAN_NAME))) {
             configurationMap.put(beanName, method);
+            controllerBeanNames.add(beanName);
             return;
         }
 
         configurationMap.put(method.getReturnType().getSimpleName(), method);
-
     }
 
     private void createBeans(final Set<Class<?>> beanClasses) {
@@ -102,6 +99,13 @@ public class ApplicationContext {
         if (configurationMap.containsKey(beanClass.getSimpleName())) {
             Class<?> declaringClass = configurationMap.get(beanClass.getSimpleName()).getDeclaringClass();
             createInstanceByConfiguration(beanClass, declaringClass);
+            return;
+        }
+
+        for (String controllerBeanName : controllerBeanNames) {
+            if (configurationMap.containsKey(controllerBeanName)) {
+
+            }
         }
 
         Constructor<?> constructor = getConstructor(beanClass);
