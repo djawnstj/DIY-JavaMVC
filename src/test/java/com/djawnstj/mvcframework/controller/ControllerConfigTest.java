@@ -1,6 +1,7 @@
 package com.djawnstj.mvcframework.controller;
 
 import com.djawnstj.mvcframework.MvcApplicationMain;
+import com.djawnstj.mvcframework.boot.web.servlet.Controller;
 import com.djawnstj.mvcframework.context.ApplicationContext;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

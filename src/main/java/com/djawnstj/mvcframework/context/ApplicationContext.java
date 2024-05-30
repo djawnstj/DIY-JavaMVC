@@ -20,6 +20,8 @@ public class ApplicationContext {
     private static final Logger logger = LoggerFactory.getLogger(ApplicationContext.class);
     private static final String DEFAULT_BEAN_NAME = "";
 
+    private static ApplicationContext applicationContext;
+
     private final BeanFactory factory;
     public final Set<Class<?>> beanClasses = new HashSet<>();
     public final Map<String, Object> beanMap = new HashMap<>();
@@ -27,6 +29,18 @@ public class ApplicationContext {
 
     public ApplicationContext(final String packageName) {
         this.factory = new BeanFactory(packageName);
+    }
+
+    public static ApplicationContext getApplicationContext(String packageName) {
+        if (applicationContext == null) {
+            synchronized (ApplicationContext.class) {
+                if (applicationContext == null) {
+                    applicationContext = new ApplicationContext(packageName);
+                    applicationContext.init();
+                }
+            }
+        }
+        return applicationContext;
     }
 
     public void init() {
@@ -181,5 +195,9 @@ public class ApplicationContext {
 
     public <T> T getBean(Class<T> clazz) {
         return clazz.cast(beanMap.get(clazz.getSimpleName()));
+    }
+
+    public Map<String, Object> getBeanMap() {
+        return beanMap;
     }
 }
