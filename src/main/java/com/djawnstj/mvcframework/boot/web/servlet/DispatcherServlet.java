@@ -1,6 +1,5 @@
 package com.djawnstj.mvcframework.boot.web.servlet;
 
-import com.djawnstj.mvcframework.context.ApplicationContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

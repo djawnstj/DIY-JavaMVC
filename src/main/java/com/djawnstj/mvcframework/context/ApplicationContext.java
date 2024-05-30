@@ -18,6 +18,7 @@ import java.util.*;
 public class ApplicationContext {
 
     private static final Logger logger = LoggerFactory.getLogger(ApplicationContext.class);
+    private static final String DEFAULT_BEAN_NAME = "";
 
     private final BeanFactory factory;
     public final Set<Class<?>> beanClasses = new HashSet<>();
@@ -51,22 +52,11 @@ public class ApplicationContext {
         for (Method method : methods) {
             if (method.isAnnotationPresent(Bean.class)) {
 
-                String beanName = method.getAnnotation(Bean.class).name();
-
                 beanClasses.add(method.getReturnType());
 
-                saveConfigurationMap(method, beanName);
+                configurationMap.put(method.getReturnType().getSimpleName(), method);
             }
         }
-    }
-
-    private void saveConfigurationMap(Method method, String beanName) {
-        if (beanName.startsWith("/")) {
-            configurationMap.put(beanName, method);
-            return;
-        }
-
-        configurationMap.put(method.getReturnType().getSimpleName(), method);
     }
 
     private void createBeans(final Set<Class<?>> beanClasses) {
