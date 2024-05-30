@@ -1,11 +1,7 @@
 package com.djawnstj.mvcframework.context;
 
-import com.djawnstj.mvcframework.annotation.Autowired;
-import com.djawnstj.mvcframework.annotation.Bean;
-import com.djawnstj.mvcframework.annotation.Component;
-import com.djawnstj.mvcframework.annotation.Configuration;
+import com.djawnstj.mvcframework.annotation.*;
 import com.djawnstj.mvcframework.bean.BeanFactory;
-import com.djawnstj.mvcframework.boot.web.servlet.HomeController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,13 +18,11 @@ import java.util.*;
 public class ApplicationContext {
 
     private static final Logger logger = LoggerFactory.getLogger(ApplicationContext.class);
-    public static final String DEFAULT_BEAN_NAME = "";
 
     private final BeanFactory factory;
     public final Set<Class<?>> beanClasses = new HashSet<>();
     public final Map<String, Object> beanMap = new HashMap<>();
     public final Map<String, Method> configurationMap = new HashMap<>();
-    public final List<String> controllerBeanNames = new ArrayList<>();
 
     public ApplicationContext(final String packageName) {
         this.factory = new BeanFactory(packageName);
@@ -67,9 +61,8 @@ public class ApplicationContext {
     }
 
     private void saveConfigurationMap(Method method, String beanName) {
-        if (!(beanName.equals(DEFAULT_BEAN_NAME))) {
+        if (beanName.startsWith("/")) {
             configurationMap.put(beanName, method);
-            controllerBeanNames.add(beanName);
             return;
         }
 
@@ -98,14 +91,8 @@ public class ApplicationContext {
 
         if (configurationMap.containsKey(beanClass.getSimpleName())) {
             Class<?> declaringClass = configurationMap.get(beanClass.getSimpleName()).getDeclaringClass();
-            createInstanceByConfiguration(beanClass, declaringClass);
+            createInstanceByConfiguration(declaringClass, beanClass.getSimpleName());
             return;
-        }
-
-        for (String controllerBeanName : controllerBeanNames) {
-            if (configurationMap.containsKey(controllerBeanName)) {
-
-            }
         }
 
         Constructor<?> constructor = getConstructor(beanClass);
@@ -129,8 +116,8 @@ public class ApplicationContext {
         }
     }
 
-    private void createInstanceByConfiguration(Class<?> beanClass, Class<?> declaringClass) {
-        Method method = configurationMap.get(beanClass.getSimpleName());
+    private void createInstanceByConfiguration(Class<?> declaringClass, String beanKey) {
+        Method method = configurationMap.get(beanKey);
         try {
             Class<?>[] parameterTypes = method.getParameterTypes();
 
@@ -142,7 +129,7 @@ public class ApplicationContext {
 
             Object bean = method.invoke(configInstance, parameters);
 
-            saveBean(beanClass.getSimpleName(), bean);
+            saveBean(beanKey, bean);
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
             throw new RuntimeException(e);
         } finally {

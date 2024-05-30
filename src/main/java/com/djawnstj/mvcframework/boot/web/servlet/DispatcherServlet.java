@@ -1,5 +1,6 @@
 package com.djawnstj.mvcframework.boot.web.servlet;
 
+import com.djawnstj.mvcframework.context.ApplicationContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,6 +18,11 @@ public class DispatcherServlet extends HttpServlet {
 
     private static final Logger logger = LoggerFactory.getLogger(DispatcherServlet.class);
     private final Map<String, Controller> servletBean = new HashMap<>();
+
+    @Override
+    public void init() throws ServletException {
+        super.init();
+    }
 
     @Override
     protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {

@@ -9,11 +9,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.util.List;
 import java.util.Map;
 
 class ControllerConfigTest {
@@ -21,16 +16,11 @@ class ControllerConfigTest {
     private static final Logger logger = LoggerFactory.getLogger(ControllerConfigTest.class);
 
     @Test
-    @DisplayName("Controller Config Test")
+    @DisplayName("controller 실습 1 - 컨트롤러 빈 등록하기")
     void controllerConfigTest() throws IOException, ClassNotFoundException, InterruptedException {
         MvcApplicationMain.main(new String[0]);
 
         ApplicationContext applicationContext = new ApplicationContext("code");
         applicationContext.init();
-
-        String uri = "/home";
-
-        List<String> controllerBeanNames = applicationContext.controllerBeanNames;
-        logger.debug(String.valueOf(controllerBeanNames));
     }
 }
