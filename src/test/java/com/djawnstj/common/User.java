@@ -1,4 +1,4 @@
-package com.djawnstj.mvcframework.bean;
+package com.djawnstj.common;
 
 public class User {
     private final String id;

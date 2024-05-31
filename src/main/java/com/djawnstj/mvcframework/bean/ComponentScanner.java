@@ -26,12 +26,11 @@ public class ComponentScanner {
 //        return classes;
 //    }
 
-    public Set<Class<?>> scan(String basePackage, Class<? extends Annotation> annotation) {
-        final Reflections reflections = new Reflections(basePackage);
+    public Set<Class<?>> scan(final String basePackage, final Class<? extends Annotation> annotation) {
+        final Reflections reflections = new Reflections("com.djawnstj.mvcframework", basePackage);
 
         return reflections.getTypesAnnotatedWith(annotation)
-                .stream().filter(clazz -> !clazz.isAnnotation())
-                .filter(clazz -> !clazz.isInterface())
+                .stream().filter(clazz -> !clazz.isAnnotation() && !clazz.isInterface())
                 .collect(Collectors.toSet());
     }
 
