@@ -1,4 +1,4 @@
-package com.djawnstj.exception;
+package com.djawnstj.exception.autowired;
 
 import com.djawnstj.mvcframework.annotation.AutoWired;
 import com.djawnstj.mvcframework.annotation.Service;

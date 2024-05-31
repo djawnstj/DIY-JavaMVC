@@ -65,8 +65,13 @@ public class BeanFactory {
             return;
         }
 
-        if (configBeanMap.containsKey(clazz.getName())) {
+        if (!beanClasses.contains(clazz)) {
+            throw new RuntimeException("ParameterType is not the target of creating Bean");
+        }
+
+        if (isContainInConfigBeanMap(clazz)) {
             createBeanFromMethod(configBeanMap.get(clazz.getName()));
+            return;
         }
 
         Constructor<?> constructor = getConstructor(clazz);
@@ -85,6 +90,10 @@ public class BeanFactory {
 
     private boolean isContainInBeanMap(final Class<?> clazz) {
         return beanMap.containsKey(clazz.getName());
+    }
+
+    private boolean isContainInConfigBeanMap(final  Class<?> clazz) {
+        return configBeanMap.containsKey(clazz.getName());
     }
 
     private void createBeanFromMethod(final Method method) {
@@ -152,13 +161,7 @@ public class BeanFactory {
     }
 
     private Object getBeanOrCreate(final Class<?> parameterType) {
-        if (!beanClasses.contains(parameterType)) {
-            throw new RuntimeException("ParameterType is not the target of creating Bean");
-        }
-
-        if (!isContainInBeanMap(parameterType)) {
-            createBeanMap(parameterType);
-        }
+        createBeanMap(parameterType);
 
         return beanMap.get(parameterType.getName());
     }

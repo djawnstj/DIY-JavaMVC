@@ -65,7 +65,7 @@ public class BeanFactoryTest {
     @DisplayName("@AutoWired 어노테이션이 두 개 이상인 경우 예외를 던져야 한다")
     void autowiredException() {
         // Given
-        final String basePackage = "com.djawnstj.exception";
+        final String basePackage = "com.djawnstj.exception.autowired";
         final BeanFactory beanFactory = new BeanFactory(basePackage);
 
         // When Then
