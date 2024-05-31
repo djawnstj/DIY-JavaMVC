@@ -14,7 +14,9 @@ public class BeanFactory {
 
     private final String packageName;
     private final ComponentScanner componentScanner = new ComponentScanner();
+    private final Set<Class<?>> beanClasses = new HashSet<>();
     private final Map<String, Object> beanMap = new HashMap<>();
+    private final Map<String, Method> configBeanMap = new HashMap<>();
 
     public BeanFactory(final String packageName) {
         this.packageName = packageName;
@@ -23,51 +25,48 @@ public class BeanFactory {
     public void init() {
         Set<Class<?>> components = componentScanner.scan(packageName, Component.class);
 
-        createBeanMap(components);
+        createBeanClasses(components);
+        createBean();
     }
 
-    private void createBeanMap(final Set<Class<?>> classes) {
-        for (Class<?> clazz : classes) {
+    private void createBeanClasses(final Set<Class<?>> classes) {
+        beanClasses.addAll(classes);
+
+        classes.forEach(clazz -> {
             if (isConfigurationClass(clazz)) {
-                createConfigurationBean(clazz);
+                addConfigurationBean(clazz);
             }
-            createBean(clazz);
-        }
+        });
     }
 
     private boolean isConfigurationClass(final Class<?> clazz) {
         return clazz.isAnnotationPresent(Configuration.class);
     }
 
-    private void createConfigurationBean(final Class<?> clazz) {
-        for (Method method : clazz.getDeclaredMethods()) {
+    private void addConfigurationBean(final Class<?> clazz) {
+        Arrays.stream(clazz.getDeclaredMethods()).forEach(method -> {
             if (isBeanMethod(method)) {
-                createBeanFromMethod(clazz, method);
+                beanClasses.add(method.getReturnType());
+                configBeanMap.put(method.getReturnType().getName(), method);
             }
-        }
+        });
     }
 
     private boolean isBeanMethod(final Method method) {
         return method.isAnnotationPresent(Bean.class);
     }
 
-    private void createBeanFromMethod(final Class<?> clazz, final Method method) {
-        Object[] parameters = getParametersThroughBeanMap(method.getParameterTypes());
-
-        try {
-            method.setAccessible(true);
-            Object bean = method.invoke(getBeanOrCreate(clazz), parameters);
-            beanMap.put(bean.getClass().getName(), bean);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        } finally {
-            method.setAccessible(false);
-        }
+    private void createBean() {
+        beanClasses.forEach(this::createBeanMap);
     }
 
-    private void createBean(final Class<?> clazz) {
+    private void createBeanMap(final Class<?> clazz) {
         if (isContainInBeanMap(clazz)) {
             return;
+        }
+
+        if (configBeanMap.containsKey(clazz.getName())) {
+            createBeanFromMethod(configBeanMap.get(clazz.getName()));
         }
 
         Constructor<?> constructor = getConstructor(clazz);
@@ -86,6 +85,20 @@ public class BeanFactory {
 
     private boolean isContainInBeanMap(final Class<?> clazz) {
         return beanMap.containsKey(clazz.getName());
+    }
+
+    private void createBeanFromMethod(final Method method) {
+        Object[] parameters = getParametersThroughBeanMap(method.getParameterTypes());
+
+        try {
+            method.setAccessible(true);
+            Object bean = method.invoke(getBeanOrCreate(method.getDeclaringClass()), parameters);
+            beanMap.put(bean.getClass().getName(), bean);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        } finally {
+            method.setAccessible(false);
+        }
     }
 
     private Constructor<?> getConstructor(final Class<?> clazz) {
@@ -139,9 +152,14 @@ public class BeanFactory {
     }
 
     private Object getBeanOrCreate(final Class<?> parameterType) {
-        if (!isContainInBeanMap(parameterType)) {
-            createBean(parameterType);
+        if (!beanClasses.contains(parameterType)) {
+            throw new RuntimeException("ParameterType is not the target of creating Bean");
         }
+
+        if (!isContainInBeanMap(parameterType)) {
+            createBeanMap(parameterType);
+        }
+
         return beanMap.get(parameterType.getName());
     }
 

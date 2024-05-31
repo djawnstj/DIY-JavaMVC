@@ -90,7 +90,19 @@ public class BeanFactoryTest {
         // Then
         assertThat(productService).isNotNull();
         assertThat(productRepository).isNotNull();
+    }
 
+    @Test
+    @DisplayName("@Bean으로 동적 빈 생성 시 빈 메서드의 파라미터가 빈 생성 대상이 아니면 예외 처리")
+    void createBeanWithParameterException() {
+        // Given
+        final String basePackage = "com.djawnstj.exception.bean";
+        final BeanFactory beanFactory = new BeanFactory(basePackage);
+
+        // When Then
+        assertThatThrownBy(beanFactory::init)
+                .isInstanceOf(RuntimeException.class)
+                .hasMessage("ParameterType is not the target of creating Bean");
     }
 
 }
