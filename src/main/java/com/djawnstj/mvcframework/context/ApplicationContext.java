@@ -2,6 +2,7 @@ package com.djawnstj.mvcframework.context;
 
 import com.djawnstj.mvcframework.annotation.*;
 import com.djawnstj.mvcframework.bean.BeanFactory;
+import com.djawnstj.mvcframework.boot.web.embbed.tomcat.TomcatWebServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,9 +19,7 @@ import java.util.*;
 public class ApplicationContext {
 
     private static final Logger logger = LoggerFactory.getLogger(ApplicationContext.class);
-    private static final String DEFAULT_BEAN_NAME = "";
-
-    private static ApplicationContext applicationContext;
+    public static final String APPLICATION_CONTEXT = "applicationContext";
 
     private final BeanFactory factory;
     public final Set<Class<?>> beanClasses = new HashSet<>();
@@ -31,19 +30,8 @@ public class ApplicationContext {
         this.factory = new BeanFactory(packageName);
     }
 
-    public static ApplicationContext getApplicationContext(String packageName) {
-        if (applicationContext == null) {
-            synchronized (ApplicationContext.class) {
-                if (applicationContext == null) {
-                    applicationContext = new ApplicationContext(packageName);
-                    applicationContext.init();
-                }
-            }
-        }
-        return applicationContext;
-    }
-
     public void init() {
+        logger.debug("ApplicationContext init: {}", this);
         Set<Class<?>> componentClasses = factory.scanAnnotationClasses(Component.class);
 
         beanClasses.addAll(componentClasses);
@@ -51,6 +39,13 @@ public class ApplicationContext {
         createBeansReferenceByConfiguration(componentClasses);
 
         createBeans(beanClasses);
+
+        startServer();
+    }
+
+    private void startServer() {
+        TomcatWebServer server = new TomcatWebServer(this);
+        server.start();
     }
 
     // configuration 을 참조하여 생성

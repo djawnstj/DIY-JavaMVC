@@ -1,20 +1,18 @@
 package com.djawnstj.mvcframework.boot.web.servlet;
 
 import com.djawnstj.mvcframework.context.ApplicationContext;
-import com.djawnstj.mvcframework.context.utils.WebApplicationContextUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
-@WebServlet("/")
 public class DispatcherServlet extends HttpServlet {
 
     private static final Logger logger = LoggerFactory.getLogger(DispatcherServlet.class);
@@ -25,19 +23,17 @@ public class DispatcherServlet extends HttpServlet {
     public void init() throws ServletException {
         super.init();
 
-        ac = ApplicationContext.getApplicationContext("code");
+        Object att = getServletContext().getAttribute(ApplicationContext.APPLICATION_CONTEXT);
 
-        if(ac == null){
-            throw new ServletException("ApplicationContext not initialized");
-        }
+        setAc(att);
 
-        Map<String, Object> beanMap = ac.getBeanMap();
+        Set<Class<?>> beanClasses = ac.beanClasses;
+        logger.debug("beanClasses: {}", beanClasses);
+    }
 
-        for (Map.Entry<String, Object> entry : beanMap.entrySet()) {
-            if (entry.getValue() instanceof Controller) {
-                servletBean.put(entry.getKey(), (Controller) entry.getValue());
-            }
-        }
+    private void setAc(Object attribute) {
+        logger.debug("found ApplicationContext: {}", attribute);
+        ac = (ApplicationContext) attribute;
     }
 
     @Override

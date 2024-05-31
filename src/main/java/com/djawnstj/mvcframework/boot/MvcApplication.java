@@ -2,6 +2,7 @@ package com.djawnstj.mvcframework.boot;
 
 import com.djawnstj.mvcframework.boot.web.embbed.tomcat.TomcatWebServer;
 import com.djawnstj.mvcframework.boot.web.server.WebServer;
+import com.djawnstj.mvcframework.context.ApplicationContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -12,8 +13,11 @@ public class MvcApplication {
     public static void run(final Class<?> configClass, final String[] args) {
         log.debug("run args = {}", List.of(args));
 
-        final WebServer webServer = new TomcatWebServer();
+        ApplicationContext applicationContext = new ApplicationContext(configClass.getPackageName());
+        applicationContext.init();
 
-        webServer.start();
+//        final WebServer webServer = new TomcatWebServer();
+
+//        webServer.start();
     }
 }
