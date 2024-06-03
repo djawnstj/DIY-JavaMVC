@@ -12,7 +12,7 @@ public class HomeController implements Controller {
 
     @Override
     public void handleRequest(HttpServletRequest req, HttpServletResponse res) {
-        System.out.println("로그인 처리");
+        System.out.println("/home 요청 처리 완료");
 
         try {
             RequestDispatcher requestDispatcher = req.getRequestDispatcher("home.jsp");
