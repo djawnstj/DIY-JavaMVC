@@ -4,6 +4,7 @@ import com.djawnstj.mvcframework.annotation.AutoWired;
 import com.djawnstj.mvcframework.annotation.Bean;
 import com.djawnstj.mvcframework.annotation.Component;
 import com.djawnstj.mvcframework.annotation.Configuration;
+import com.djawnstj.mvcframework.boot.web.embbed.tomcat.TomcatWebServer;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
@@ -27,6 +28,8 @@ public class BeanFactory {
 
         createBeanClasses(components);
         createBean();
+
+        startServer();
     }
 
     private void createBeanClasses(final Set<Class<?>> classes) {
@@ -101,8 +104,16 @@ public class BeanFactory {
 
         try {
             method.setAccessible(true);
+
+            String beanName = method.getAnnotation(Bean.class).name();
+
             Object bean = method.invoke(getBeanOrCreate(method.getDeclaringClass()), parameters);
-            beanMap.put(bean.getClass().getName(), bean);
+            if (beanName.isBlank()) {
+                beanMap.put(bean.getClass().getName(), bean);
+            } else {
+                beanMap.put(beanName, bean);
+            }
+
         } catch (Exception e) {
             throw new RuntimeException(e);
         } finally {
@@ -166,8 +177,21 @@ public class BeanFactory {
         return beanMap.get(parameterType.getName());
     }
 
+    private void startServer() {
+        TomcatWebServer server = new TomcatWebServer(this);
+        server.start();
+    }
+
     public <T> T getBean(final Class<T> clazz) {
         return (T) beanMap.get(clazz.getName());
+    }
+
+    public boolean isContainBean(final String key) {
+        return beanMap.containsKey(key);
+    }
+
+    public Object getBean(final String key) {
+        return beanMap.get(key);
     }
 
 }

@@ -1,5 +1,6 @@
 package com.djawnstj.mvcframework.boot;
 
+import com.djawnstj.mvcframework.bean.BeanFactory;
 import com.djawnstj.mvcframework.boot.web.embbed.tomcat.TomcatWebServer;
 import com.djawnstj.mvcframework.boot.web.server.WebServer;
 import org.slf4j.Logger;
@@ -12,7 +13,7 @@ public class MvcApplication {
     public static void run(final Class<?> configClass, final String[] args) {
         log.debug("run args = {}", List.of(args));
 
-        final WebServer webServer = new TomcatWebServer();
-        webServer.start();
+        final BeanFactory beanFactory = new BeanFactory("com.djawnstj.mvcframework");
+        beanFactory.init();
     }
 }

@@ -49,16 +49,16 @@ public class BeanFactoryTest {
         // Given
         final BeanFactory beanFactory = new BeanFactory(basePackage);
         Class<UserService> userServiceClass = UserService.class;
-        Class<PayController> payControllerClass = PayController.class;
+        Class<ProductService> productServiceClass = ProductService.class;
 
         // When
         beanFactory.init();
         UserService userService = beanFactory.getBean(userServiceClass);
-        PayController payController = beanFactory.getBean(payControllerClass);
+        ProductService productService = beanFactory.getBean(productServiceClass);
 
         // Then
         assertThat(userService).isNotNull();
-        assertThat(payController).isNotNull();
+        assertThat(productService).isNotNull();
     }
 
     @Test
