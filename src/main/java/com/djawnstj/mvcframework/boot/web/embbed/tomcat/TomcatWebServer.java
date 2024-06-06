@@ -1,9 +1,12 @@
 package com.djawnstj.mvcframework.boot.web.embbed.tomcat;
 
+import com.djawnstj.mvcframework.bean.BeanFactory;
 import com.djawnstj.mvcframework.boot.web.server.WebServer;
 import com.djawnstj.mvcframework.boot.web.server.WebServerException;
+import com.djawnstj.mvcframework.boot.web.servlet.DispatcherServlet;
 import org.apache.catalina.Context;
 import org.apache.catalina.LifecycleException;
+import org.apache.catalina.Wrapper;
 import org.apache.catalina.startup.Tomcat;
 import org.apache.catalina.webresources.DirResourceSet;
 import org.apache.catalina.webresources.StandardRoot;
@@ -23,6 +26,11 @@ public class TomcatWebServer implements WebServer {
     private int port = 8080;
     private final Object monitor = new Object();
     private boolean started = false;
+    private final BeanFactory beanFactory;
+
+    public TomcatWebServer(BeanFactory beanFactory) {
+        this.beanFactory = beanFactory;
+    }
 
     @Override
     public void start() throws WebServerException {
@@ -73,6 +81,10 @@ public class TomcatWebServer implements WebServer {
         resources.addPostResources(new DirResourceSet(resources, "/WEB-INF/classes", classPath, "/"));
 
         context.setResources(resources);
+
+        context.getServletContext().setAttribute("BeanFactory", beanFactory);
+        Wrapper sw = this.tomcat.addServlet(context.getPath(), "dispatcherServlet", new DispatcherServlet());
+        sw.addMapping("/");
     }
 
     private String getClassPath() {
