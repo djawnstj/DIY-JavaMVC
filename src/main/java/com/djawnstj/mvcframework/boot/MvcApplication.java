@@ -13,7 +13,7 @@ public class MvcApplication {
     public static void run(final Class<?> configClass, final String[] args) {
         log.debug("run args = {}", List.of(args));
 
-        ApplicationContext applicationContext = new ApplicationContext(configClass.getPackageName());
+        ApplicationContext applicationContext = new ApplicationContext("test.java");
         applicationContext.init();
 
 //        final WebServer webServer = new TomcatWebServer();

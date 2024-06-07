@@ -85,7 +85,7 @@ class ControllerConfigTest {
     @DisplayName("컨트롤러 빈 등록하기 - test")
     void controllerConfigTestFail2() throws IOException, InterruptedException {
         String url = "http://localhost:8080";
-        String uri = "/users/sign-up"; // 없는 uri
+        String uri = "/users/home"; // 없는 uri
         HttpClient client = HttpClient.newHttpClient();
 
         // when

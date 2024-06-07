@@ -1,6 +1,6 @@
 package study.code;
 
-import code.Pay;
+import com.djawnstj.mvcframework.code.Pay;
 
 public class User {
 

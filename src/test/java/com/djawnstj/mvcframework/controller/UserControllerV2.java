@@ -1,14 +1,14 @@
 package com.djawnstj.mvcframework.controller;
 
-import com.djawnstj.mvcframework.code.UserService;
 import com.djawnstj.mvcframework.annotation.Controller;
+import com.djawnstj.mvcframework.code.UserService;
 
 @Controller("users")
-public class UserController {
+public class UserControllerV2 {
 
     private final UserService userService;
 
-    public UserController(final UserService userService) {
+    public UserControllerV2(final UserService userService) {
         this.userService = userService;
     }
 

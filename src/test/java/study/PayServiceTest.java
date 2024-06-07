@@ -1,6 +1,6 @@
 package study;
 
-import code.*;
+import com.djawnstj.mvcframework.code.Pay;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import study.code.*;

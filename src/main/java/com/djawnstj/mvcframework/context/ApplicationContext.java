@@ -3,10 +3,10 @@ package com.djawnstj.mvcframework.context;
 import com.djawnstj.mvcframework.annotation.*;
 import com.djawnstj.mvcframework.bean.BeanFactory;
 import com.djawnstj.mvcframework.boot.web.embbed.tomcat.TomcatWebServer;
+import com.djawnstj.mvcframework.boot.web.servlet.Controller;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
 import java.util.*;
 
@@ -40,6 +40,10 @@ public class ApplicationContext {
         createBeansReferenceByConfiguration(componentClasses);
 
         createBeans(beanClasses);
+
+        for (Map.Entry<String, Object> entry : beanMap.entrySet()) {
+            logger.debug(String.valueOf(entry));
+        }
 
         startServer();
     }
@@ -133,10 +137,10 @@ public class ApplicationContext {
 
             if (annotation.name().isBlank()) {
                 saveBean(simpleName, bean);
-            } else {
-                saveBean(annotation.name(), bean);
+                return;
             }
 
+            saveBean(annotation.name(), bean);
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
             throw new RuntimeException(e);
         } finally {
@@ -201,8 +205,6 @@ public class ApplicationContext {
     }
 
     public <T> Map<String, T> getBeanMap(final Class<T> type) {
-        logger.info("Requested type: " + type);
-
         Map<String, T> result = new HashMap<>();
 
         for (Map.Entry<String, Object> entry : beanMap.entrySet()) {
