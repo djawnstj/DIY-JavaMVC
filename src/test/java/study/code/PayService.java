@@ -1,8 +1,8 @@
-package code;
+package study.code;
 
 public class PayService {
 
-    private final UserRepository userRepository;
+    public final UserRepository userRepository;
 
     public PayService(UserRepository userRepository) {
         this.userRepository = userRepository;

@@ -1,4 +1,6 @@
-package code;
+package study.code;
+
+import com.djawnstj.mvcframework.code.Pay;
 
 public class User {
 

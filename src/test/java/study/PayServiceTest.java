@@ -1,8 +1,12 @@
 package study;
 
-import code.*;
+import com.djawnstj.mvcframework.code.Pay;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import study.code.*;
+import study.code.PayService;
+import study.code.User;
+import study.code.UserRepository;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;

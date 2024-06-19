@@ -1,10 +1,11 @@
 package com.djawnstj.mvcframework.context;
 
-import com.djawnstj.mvcframework.annotation.Autowired;
-import com.djawnstj.mvcframework.annotation.Bean;
-import com.djawnstj.mvcframework.annotation.Component;
-import com.djawnstj.mvcframework.annotation.Configuration;
+import com.djawnstj.mvcframework.annotation.*;
 import com.djawnstj.mvcframework.bean.BeanFactory;
+import com.djawnstj.mvcframework.boot.web.embbed.tomcat.TomcatWebServer;
+import com.djawnstj.mvcframework.boot.web.servlet.Controller;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.*;
 import java.util.*;
@@ -18,12 +19,16 @@ import java.util.*;
 
 public class ApplicationContext {
 
+    private static final Logger logger = LoggerFactory.getLogger(ApplicationContext.class);
+    public static final String APPLICATION_CONTEXT = "applicationContext";
+
     private final BeanFactory factory;
-    private final Set<Class<?>> beanClasses = new HashSet<>();
+    public final Set<Class<?>> beanClasses = new HashSet<>();
     public final Map<String, Object> beanMap = new HashMap<>();
     public final Map<String, Method> configurationMap = new HashMap<>();
 
     public ApplicationContext(final String packageName) {
+        logger.debug("packageName = {}", packageName);
         this.factory = new BeanFactory(packageName);
     }
 
@@ -35,6 +40,17 @@ public class ApplicationContext {
         createBeansReferenceByConfiguration(componentClasses);
 
         createBeans(beanClasses);
+
+        for (Map.Entry<String, Object> entry : beanMap.entrySet()) {
+            logger.debug(String.valueOf(entry));
+        }
+
+        startServer();
+    }
+
+    private void startServer() {
+        TomcatWebServer server = new TomcatWebServer(this);
+        server.start();
     }
 
     // configuration 을 참조하여 생성
@@ -49,7 +65,9 @@ public class ApplicationContext {
     private void addConfiguration(Method[] methods) {
         for (Method method : methods) {
             if (method.isAnnotationPresent(Bean.class)) {
+
                 beanClasses.add(method.getReturnType());
+
                 configurationMap.put(method.getReturnType().getSimpleName(), method);
             }
         }
@@ -77,7 +95,8 @@ public class ApplicationContext {
 
         if (configurationMap.containsKey(beanClass.getSimpleName())) {
             Class<?> declaringClass = configurationMap.get(beanClass.getSimpleName()).getDeclaringClass();
-            createInstanceByConfiguration(beanClass,declaringClass);
+            createInstanceByConfiguration(declaringClass, beanClass.getSimpleName());
+            return;
         }
 
         Constructor<?> constructor = getConstructor(beanClass);
@@ -101,8 +120,8 @@ public class ApplicationContext {
         }
     }
 
-    private void createInstanceByConfiguration(Class<?> beanClass, Class<?> declaringClass) {
-        Method method = configurationMap.get(beanClass.getSimpleName());
+    private void createInstanceByConfiguration(Class<?> declaringClass, String simpleName) {
+        Method method = configurationMap.get(simpleName);
         try {
             Class<?>[] parameterTypes = method.getParameterTypes();
 
@@ -114,7 +133,14 @@ public class ApplicationContext {
 
             Object bean = method.invoke(configInstance, parameters);
 
-            saveBean(beanClass.getSimpleName(), bean);
+            Bean annotation = method.getAnnotation(Bean.class);
+
+            if (annotation.name().isBlank()) {
+                saveBean(simpleName, bean);
+                return;
+            }
+
+            saveBean(annotation.name(), bean);
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
             throw new RuntimeException(e);
         } finally {
@@ -170,11 +196,23 @@ public class ApplicationContext {
         return autowiredConstructors.get(0);
     }
 
-    private void saveBean(String beanName, Object instance) {
+    private void saveBean(final String beanName, final Object instance) {
         beanMap.put(beanName, instance);
     }
 
-    public <T> T getBean(Class<T> clazz) {
+    public <T> T getBean(final Class<T> clazz) {
         return clazz.cast(beanMap.get(clazz.getSimpleName()));
+    }
+
+    public <T> Map<String, T> getBeanMap(final Class<T> type) {
+        Map<String, T> result = new HashMap<>();
+
+        for (Map.Entry<String, Object> entry : beanMap.entrySet()) {
+            if (type.isInstance(entry.getValue())) {
+                result.put(entry.getKey(), type.cast(entry.getValue()));
+            }
+        }
+
+        return Collections.unmodifiableMap(result);
     }
 }
